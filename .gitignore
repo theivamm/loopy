@@ -1,0 +1,26 @@
+# dependencies
+node_modules/
+
+# env
+.env
+.env.local
+.env.*.local
+
+# secrets dumped locally (never commit)
+supabase.txt
+supabasedatabasepass.txt
+
+# build output
+dist/
+build/
+client/dist/
+server/dist/
+
+# logs
+npm-debug.log*
+*.log
+
+# os / editor
+.DS_Store
+.vscode/*
+!.vscode/extensions.json

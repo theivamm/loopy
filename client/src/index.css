@@ -1,0 +1,124 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&family=Caveat:wght@500..700&display=swap");
+@import "tailwindcss";
+
+@theme {
+  /* base surfaces */
+  --color-cream: #fff9f4;
+  --color-surface: #ffffff;
+  --color-surface-soft: #fbf5f0;
+  --color-line: #f0e6de;
+
+  /* pastels */
+  --color-lavender: #c9b8ff;
+  --color-peach: #ffc2a8;
+  --color-blush: #ffb8d1;
+  --color-mint: #b5ead7;
+  --color-butter: #ffe8a3;
+  --color-sky: #b8dcff;
+  --color-lilac-mist: #e9e0ff;
+
+  /* deep tones */
+  --color-ink: #2e2440;
+  --color-ink-soft: #6b5f7e;
+  --color-ink-muted: #a89db5;
+  --color-plum: #7c5cdb;
+  --color-coral: #ff8a70;
+
+  /* states */
+  --color-success: #7dd3a8;
+  --color-warning: #ffd27a;
+  --color-error: #ff9b9b;
+  --color-info: #8fc4ff;
+
+  /* night mode */
+  --color-night-bg: #1e1830;
+  --color-night-surface: #2a2240;
+  --color-night-surface-soft: #342b4d;
+  --color-night-text: #f5efff;
+  --color-night-text-soft: #b8adcc;
+
+  /* radii */
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  --radius-lg: 28px;
+  --radius-xl: 36px;
+
+  /* fonts */
+  --font-display: "Fraunces", serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-hand: "Caveat", cursive;
+
+  /* shadows */
+  --shadow-loopy-sm: 0 2px 8px rgba(124, 92, 219, 0.06);
+  --shadow-loopy-md: 0 8px 24px rgba(124, 92, 219, 0.08);
+  --shadow-loopy-lg: 0 16px 48px rgba(124, 92, 219, 0.12);
+  --shadow-loopy-glow: 0 8px 32px rgba(255, 184, 209, 0.45);
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-cream);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+  }
+}
+
+@keyframes loopy-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+@layer utilities {
+  .font-hand {
+    font-family: var(--font-hand);
+  }
+
+  .bg-grad-loop {
+    background-image: linear-gradient(135deg, #c9b8ff 0%, #ffc2a8 100%);
+  }
+
+  .bg-grad-love {
+    background-image: linear-gradient(135deg, #ffb8d1 0%, #ffc2a8 100%);
+  }
+
+  .bg-grad-dream {
+    background-image: linear-gradient(135deg, #b8dcff 0%, #c9b8ff 100%);
+  }
+
+  .bg-grad-fresh {
+    background-image: linear-gradient(135deg, #b5ead7 0%, #b8dcff 100%);
+  }
+
+  .bg-grad-sunny {
+    background-image: linear-gradient(135deg, #ffe8a3 0%, #ffc2a8 100%);
+  }
+
+  .bg-grad-hero {
+    background-image: linear-gradient(
+      160deg,
+      #fff9f4 0%,
+      #f3eeff 45%,
+      #ffeef4 100%
+    );
+  }
+}
