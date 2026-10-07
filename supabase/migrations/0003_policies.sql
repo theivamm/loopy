@@ -33,10 +33,14 @@ create policy "spaces_update_member" on couple_spaces
 
 alter table memberships enable row level security;
 
+-- NOTE: must go through is_space_member() (SECURITY DEFINER, bypasses RLS
+-- internally) rather than querying memberships directly here — a policy on
+-- memberships that queries memberships re-triggers itself and Postgres
+-- raises "infinite recursion detected in policy for relation memberships".
 create policy "memberships_select_own_space" on memberships
   for select using (
     user_id = auth.uid()
-    or exists (select 1 from memberships m2 where m2.space_id = memberships.space_id and m2.user_id = auth.uid())
+    or is_space_member(space_id)
   );
 
 alter table invitations enable row level security;
