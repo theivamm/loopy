@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import { Button } from '../components/ui/Button'
@@ -16,7 +16,7 @@ const COLORS = [
 
 export default function Onboarding() {
   const navigate = useNavigate()
-  const { user, refresh } = useAuth()
+  const { user, loading: authLoading, refresh } = useAuth()
   const [apodo, setApodo] = useState('')
   const [colorHilo, setColorHilo] = useState<(typeof COLORS)[number]['key']>('lavender')
   const [spaceName, setSpaceName] = useState('')
@@ -26,7 +26,10 @@ export default function Onboarding() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    if (!user) return
+    if (!user) {
+      setError('Tu sesión no está activa todavía. Confirmá tu email e iniciá sesión de nuevo.')
+      return
+    }
     setError(null)
     setLoading(true)
 
@@ -55,6 +58,35 @@ export default function Onboarding() {
 
     await refresh()
     navigate('/app/invite')
+  }
+
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-grad-hero">
+        <LoopyMascot size={64} />
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-grad-hero px-4 text-center">
+        <div className="w-full max-w-sm rounded-[var(--radius-xl)] bg-surface p-8 shadow-[var(--shadow-loopy-lg)]">
+          <div className="mb-6 flex justify-center">
+            <LoopyMascot size={72} expression="waiting" />
+          </div>
+          <h1 className="font-display text-2xl font-semibold text-ink">Iniciá sesión primero</h1>
+          <p className="mt-2 text-ink-soft">
+            Si acabás de registrarte, confirmá tu email y después iniciá sesión para seguir.
+          </p>
+          <Link to="/login">
+            <Button variant="primary" className="mt-6 w-full">
+              Ir a iniciar sesión
+            </Button>
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
