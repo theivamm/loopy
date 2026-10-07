@@ -23,13 +23,18 @@ export default function Dashboard() {
   useEffect(() => {
     if (!space || !user) return
 
-    supabase
-      .from('statuses')
-      .select('*')
-      .eq('space_id', space.id)
-      .neq('user_id', user.id)
-      .maybeSingle()
-      .then(({ data }) => setPartnerStatus(data as Status | null))
+    function loadPartnerStatus() {
+      if (!space || !user) return
+      supabase
+        .from('statuses')
+        .select('*')
+        .eq('space_id', space.id)
+        .neq('user_id', user.id)
+        .maybeSingle()
+        .then(({ data }) => setPartnerStatus(data as Status | null))
+    }
+
+    loadPartnerStatus()
 
     supabase
       .from('letters')
@@ -39,6 +44,20 @@ export default function Dashboard() {
       .limit(1)
       .maybeSingle()
       .then(({ data }) => setLastLetter(data as Letter | null))
+
+    // keeps "pensando en vos" / partner status live without a manual reload
+    const channel = supabase
+      .channel(`dashboard-statuses-${space.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'statuses', filter: `space_id=eq.${space.id}` },
+        loadPartnerStatus,
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [space, user])
 
   async function sendThinkingOfYou() {

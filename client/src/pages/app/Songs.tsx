@@ -5,6 +5,8 @@ import { Button } from '../../components/ui/Button'
 import { LoopyMascot } from '../../components/LoopyMascot'
 import type { Song } from '../../types/db'
 
+const API_URL = import.meta.env.VITE_API_URL as string
+
 export default function Songs() {
   const { space, user } = useAuth()
   const [songs, setSongs] = useState<Song[]>([])
@@ -14,6 +16,7 @@ export default function Songs() {
   const [nota, setNota] = useState('')
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
 
   async function load() {
     if (!space) return
@@ -33,19 +36,51 @@ export default function Songs() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!space || !user || !titulo.trim()) return
+    setSaving(true)
+
+    let imagen: string | null = null
+    let plataforma: string | null = null
+    let autoTitulo: string | null = null
+    let autoArtista: string | null = null
+
+    if (url.trim()) {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession()
+        if (session) {
+          const res = await fetch(`${API_URL}/api/song-preview?url=${encodeURIComponent(url)}`, {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          })
+          if (res.ok) {
+            const preview = await res.json()
+            imagen = preview.imagen
+            plataforma = preview.plataforma
+            autoTitulo = preview.titulo
+            autoArtista = preview.artista
+          }
+        }
+      } catch {
+        // preview is best-effort; the song still gets saved without it
+      }
+    }
+
     await supabase.from('songs').insert({
       space_id: space.id,
       agregado_por: user.id,
-      titulo,
-      artista: artista || null,
+      titulo: titulo.trim() || autoTitulo || 'Sin título',
+      artista: artista || autoArtista || null,
       url: url || null,
       nota: nota || null,
+      imagen,
+      plataforma,
     })
     setTitulo('')
     setArtista('')
     setUrl('')
     setNota('')
     setOpen(false)
+    setSaving(false)
     load()
   }
 
@@ -73,23 +108,32 @@ export default function Songs() {
       </div>
 
       {songOfTheDay && (
-        <div className="mt-6 rounded-[var(--radius-lg)] bg-grad-loop p-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink/70">
-            🎵 Canción del día
-          </p>
-          <p className="mt-1 font-display text-xl font-semibold text-ink">{songOfTheDay.titulo}</p>
-          {songOfTheDay.artista && <p className="text-ink/80">{songOfTheDay.artista}</p>}
-          {songOfTheDay.nota && <p className="mt-2 font-hand text-lg text-ink">{songOfTheDay.nota}</p>}
-          {songOfTheDay.url && (
-            <a
-              href={songOfTheDay.url}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-2 inline-block text-sm font-semibold text-ink underline"
-            >
-              Escuchar →
-            </a>
+        <div className="mt-6 flex gap-4 overflow-hidden rounded-[var(--radius-lg)] bg-grad-loop p-5">
+          {songOfTheDay.imagen && (
+            <img
+              src={songOfTheDay.imagen}
+              alt=""
+              className="h-20 w-20 shrink-0 rounded-[var(--radius-md)] object-cover"
+            />
           )}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink/70">
+              🎵 Canción del día
+            </p>
+            <p className="mt-1 font-display text-xl font-semibold text-ink">{songOfTheDay.titulo}</p>
+            {songOfTheDay.artista && <p className="text-ink/80">{songOfTheDay.artista}</p>}
+            {songOfTheDay.nota && <p className="mt-2 font-hand text-lg text-ink">{songOfTheDay.nota}</p>}
+            {songOfTheDay.url && (
+              <a
+                href={songOfTheDay.url}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 inline-block text-sm font-semibold text-ink underline"
+              >
+                Escuchar →
+              </a>
+            )}
+          </div>
         </div>
       )}
 
@@ -99,7 +143,13 @@ export default function Songs() {
           className="mt-6 flex flex-col gap-3 rounded-[var(--radius-lg)] bg-surface p-6 shadow-[var(--shadow-loopy-sm)]"
         >
           <input
-            required
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="Link de Spotify / YouTube / Apple Music"
+            className="h-12 rounded-[var(--radius-sm)] bg-surface-soft px-4 outline-none focus:ring-2 focus:ring-lavender"
+          />
+          <input
+            required={!url.trim()}
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
             placeholder="Título de la canción"
@@ -108,13 +158,7 @@ export default function Songs() {
           <input
             value={artista}
             onChange={(e) => setArtista(e.target.value)}
-            placeholder="Artista (opcional)"
-            className="h-12 rounded-[var(--radius-sm)] bg-surface-soft px-4 outline-none focus:ring-2 focus:ring-lavender"
-          />
-          <input
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="Link de Spotify / YouTube / Apple Music"
+            placeholder="Artista (opcional, se autocompleta del link)"
             className="h-12 rounded-[var(--radius-sm)] bg-surface-soft px-4 outline-none focus:ring-2 focus:ring-lavender"
           />
           <input
@@ -123,8 +167,8 @@ export default function Songs() {
             placeholder="Nota (opcional)"
             className="h-12 rounded-[var(--radius-sm)] bg-surface-soft px-4 font-hand text-lg outline-none focus:ring-2 focus:ring-lavender"
           />
-          <Button type="submit" variant="primary">
-            Agregar canción
+          <Button type="submit" variant="primary" disabled={saving}>
+            {saving ? 'Guardando…' : 'Agregar canción'}
           </Button>
         </form>
       )}
@@ -139,16 +183,29 @@ export default function Songs() {
         {songs.map((song) => (
           <div
             key={song.id}
-            className="flex items-center justify-between rounded-[var(--radius-md)] border border-line bg-surface p-4"
+            className="flex items-center justify-between gap-3 rounded-[var(--radius-md)] border border-line bg-surface p-4"
           >
-            <div>
-              <p className="font-semibold text-ink">{song.titulo}</p>
-              {song.artista && <p className="text-sm text-ink-soft">{song.artista}</p>}
+            <div className="flex min-w-0 items-center gap-3">
+              {song.imagen ? (
+                <img
+                  src={song.imagen}
+                  alt=""
+                  className="h-12 w-12 shrink-0 rounded-[var(--radius-sm)] object-cover"
+                />
+              ) : (
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-surface-soft text-xl">
+                  🎵
+                </div>
+              )}
+              <div className="min-w-0">
+                <p className="truncate font-semibold text-ink">{song.titulo}</p>
+                {song.artista && <p className="truncate text-sm text-ink-soft">{song.artista}</p>}
+              </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2">
               {!song.es_del_dia && (
                 <Button variant="secondary" onClick={() => markAsToday(song.id)}>
-                  Hacer canción del día
+                  Canción del día
                 </Button>
               )}
               <button

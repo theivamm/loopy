@@ -21,6 +21,9 @@ export default function Estados() {
   const [disponibilidad, setDisponibilidad] = useState<NonNullable<Status['disponibilidad']>>('libre')
   const [mensaje, setMensaje] = useState('')
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [justSaved, setJustSaved] = useState(false)
 
   async function load() {
     if (!space || !user) return
@@ -53,10 +56,30 @@ export default function Estados() {
     load()
   }, [space, user])
 
+  // Live-sync: without this, a status change from one partner only shows up
+  // for the other after a manual reload.
+  useEffect(() => {
+    if (!space) return
+    const channel = supabase
+      .channel(`statuses-${space.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'statuses', filter: `space_id=eq.${space.id}` },
+        () => load(),
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [space, user])
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!space || !user) return
-    await supabase.from('statuses').upsert(
+    setSaving(true)
+    setError(null)
+    const { error: upsertError } = await supabase.from('statuses').upsert(
       {
         space_id: space.id,
         user_id: user.id,
@@ -68,6 +91,13 @@ export default function Estados() {
       },
       { onConflict: 'space_id,user_id' },
     )
+    setSaving(false)
+    if (upsertError) {
+      setError('Uy, se nos enredó el hilo. Probá de nuevo.')
+      return
+    }
+    setJustSaved(true)
+    setTimeout(() => setJustSaved(false), 2500)
     load()
   }
 
@@ -149,8 +179,9 @@ export default function Estados() {
             placeholder="Mensaje corto (opcional)"
             className="h-11 rounded-[var(--radius-sm)] bg-surface-soft px-3 outline-none focus:ring-2 focus:ring-lavender"
           />
-          <Button type="submit" variant="primary">
-            Actualizar mi estado
+          {error && <p className="text-sm text-error">{error}</p>}
+          <Button type="submit" variant="primary" disabled={saving}>
+            {saving ? 'Actualizando…' : justSaved ? '¡Listo! 🎉' : 'Actualizar mi estado'}
           </Button>
         </form>
       </div>

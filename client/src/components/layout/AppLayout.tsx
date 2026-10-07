@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { LoopyMascot } from '../LoopyMascot'
 import { useAuth } from '../../context/AuthContext'
+import { UserStatusMenu } from './UserStatusMenu'
 
 const navItems = [
   { to: '/app', label: 'Inicio', emoji: '🏠', end: true },
@@ -13,7 +14,6 @@ const navItems = [
   { to: '/app/calendario', label: 'Calendario', emoji: '📅' },
   { to: '/app/comidas', label: 'Comidas', emoji: '🍝' },
   { to: '/app/ideas', label: 'Ideas', emoji: '✨' },
-  { to: '/app/ajustes', label: 'Ajustes', emoji: '⚙️' },
 ]
 
 const mobileItems = navItems.slice(0, 5)
@@ -50,7 +50,9 @@ export function AppLayout() {
         </nav>
       </aside>
 
-      <main className="flex-1 pb-20 md:pb-0">
+      <UserStatusMenu />
+
+      <main className="flex-1 pb-20 pt-20 md:pb-0">
         <Outlet />
       </main>
 

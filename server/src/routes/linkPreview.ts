@@ -37,10 +37,11 @@ linkPreviewRouter.get('/', requireAuth, async (req, res) => {
     })
     clearTimeout(timeout)
     const html = await response.text()
+    const rawImage = extractMeta(html, 'og:image')
 
     res.json({
       titulo: extractMeta(html, 'og:title') ?? extractMeta(html, 'twitter:title'),
-      imagen: extractMeta(html, 'og:image'),
+      imagen: rawImage ? new URL(rawImage, parsed.origin).toString() : null,
       descripcion: extractMeta(html, 'og:description'),
     })
   } catch {

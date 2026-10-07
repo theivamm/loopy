@@ -91,6 +91,7 @@ export interface Song {
   nota: string | null
   es_del_dia: boolean
   fecha: string
+  imagen: string | null
 }
 
 export interface Movie {
