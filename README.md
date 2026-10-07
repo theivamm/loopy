@@ -79,10 +79,17 @@ Implementado y funcional contra Supabase:
 - Onboarding: apodo, color de hilo, nombre del espacio, aniversario
 - Invitación de pareja (link + código de 6 dígitos, vence en 7 días) y animación de "nace Loopy"
 - Dashboard en bento con estado de la pareja, "Pensando en vos", contador de días juntos
+- Estados: emoji, disponibilidad, actividad y mensaje, con el estado de tu pareja en vivo
 - Cartas (crear y ver)
 - Notitas (crear, ver, sacar)
+- Música: playlist compartida + "canción del día"
+- Pelis y series: lista por ver/viendo/vista + ruleta "¿Qué vemos hoy?"
+- Links: guardar con preview automático (vía el endpoint del server) + categorías + marcar como hecho
+- Calendario de eventos: agendar y ver el próximo evento con cuenta regresiva
+- Calendario de comidas: grilla semanal (desayuno/almuerzo/cena), crea la receta al vuelo por nombre
+- Ideas: agregar, votar, marcar como privada
 
-Módulos marcados "Loopy todavía está tejiendo esto" (pendientes de Fase 2/3 según el roadmap del documento): Estados avanzados, Música, Pelis y series, Links, Calendario de eventos, Calendario de comidas, Ideas.
+Pendiente (Fase 3+ del roadmap): línea de tiempo/recuerdos, pregunta del día, cápsula del tiempo, Loopy que crece, integración real con TMDB/Spotify.
 
 ## Seguridad
 

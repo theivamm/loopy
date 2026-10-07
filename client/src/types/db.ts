@@ -79,3 +79,85 @@ export interface Note {
   rotacion: number
   creado_en: string
 }
+
+export interface Song {
+  id: string
+  space_id: string
+  agregado_por: string
+  titulo: string
+  artista: string | null
+  url: string | null
+  plataforma: string | null
+  nota: string | null
+  es_del_dia: boolean
+  fecha: string
+}
+
+export interface Movie {
+  id: string
+  space_id: string
+  agregado_por: string
+  tmdb_id: number | null
+  titulo: string
+  poster: string | null
+  estado: 'por_ver' | 'viendo' | 'vista'
+  rating_a: number | null
+  rating_b: number | null
+  creado_en: string
+}
+
+export interface Link {
+  id: string
+  space_id: string
+  agregado_por: string
+  url: string
+  titulo: string | null
+  imagen: string | null
+  categoria: string | null
+  hecho: boolean
+  creado_en: string
+}
+
+export interface Event {
+  id: string
+  space_id: string
+  creado_por: string
+  titulo: string
+  inicio: string
+  fin: string | null
+  tipo: string | null
+  recurrencia: string | null
+  recordatorio: boolean
+  creado_en: string
+}
+
+export interface Recipe {
+  id: string
+  space_id: string
+  nombre: string
+  ingredientes: string[] | null
+  pasos: string | null
+  link: string | null
+  creado_en: string
+}
+
+export interface Meal {
+  id: string
+  space_id: string
+  fecha: string
+  momento: 'desayuno' | 'almuerzo' | 'cena'
+  receta_id: string | null
+  cocina_user_id: string | null
+}
+
+export interface Idea {
+  id: string
+  space_id: string
+  autor_id: string
+  titulo: string
+  descripcion: string | null
+  categoria: string | null
+  privada: boolean
+  votos: number
+  creado_en: string
+}

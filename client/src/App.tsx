@@ -11,10 +11,16 @@ import InvitePage from './pages/InvitePage'
 import InviteAccept from './pages/InviteAccept'
 
 import Dashboard from './pages/app/Dashboard'
+import Estados from './pages/app/Estados'
 import Letters from './pages/app/Letters'
 import Notes from './pages/app/Notes'
+import Songs from './pages/app/Songs'
+import Movies from './pages/app/Movies'
+import Links from './pages/app/Links'
+import Events from './pages/app/Events'
+import Meals from './pages/app/Meals'
+import Ideas from './pages/app/Ideas'
 import Settings from './pages/app/Settings'
-import ComingSoon from './pages/app/ComingSoon'
 
 export default function App() {
   return (
@@ -30,15 +36,15 @@ export default function App() {
           <Route path="/app/invite" element={<InvitePage />} />
           <Route path="/app" element={<AppLayout />}>
             <Route index element={<Dashboard />} />
-            <Route path="estados" element={<ComingSoon title="Estados" />} />
+            <Route path="estados" element={<Estados />} />
             <Route path="cartas" element={<Letters />} />
             <Route path="notitas" element={<Notes />} />
-            <Route path="musica" element={<ComingSoon title="Música" />} />
-            <Route path="pelis" element={<ComingSoon title="Pelis y series" />} />
-            <Route path="links" element={<ComingSoon title="Links" />} />
-            <Route path="calendario" element={<ComingSoon title="Calendario" />} />
-            <Route path="comidas" element={<ComingSoon title="Comidas" />} />
-            <Route path="ideas" element={<ComingSoon title="Ideas" />} />
+            <Route path="musica" element={<Songs />} />
+            <Route path="pelis" element={<Movies />} />
+            <Route path="links" element={<Links />} />
+            <Route path="calendario" element={<Events />} />
+            <Route path="comidas" element={<Meals />} />
+            <Route path="ideas" element={<Ideas />} />
             <Route path="ajustes" element={<Settings />} />
           </Route>
         </Route>
