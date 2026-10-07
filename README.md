@@ -17,15 +17,22 @@ loopy/
 ├── client/      # app React (landing, auth, dashboard bento)
 ├── server/      # API Node/Express (link previews, futuras integraciones)
 └── supabase/
-    └── migrations/0001_init.sql   # schema + RLS + funciones de invitación
+    └── migrations/
+        ├── 0001_tables.sql     # todas las tablas
+        ├── 0002_functions.sql  # triggers + RPCs (create_space, create_invitation, accept_invitation)
+        └── 0003_policies.sql   # RLS, al final para poder referenciar cualquier tabla/función
 ```
 
 ## 1. Base de datos (Supabase)
 
-La migración todavía **no fue aplicada** (el sandbox de este asistente bloquea comandos de deploy contra producción). Para aplicarla:
+La migración todavía **no fue aplicada** (el sandbox de este asistente bloquea comandos de deploy contra producción). Aplicala en 3 pasos, en orden, cada uno como una query nueva:
 
-1. Entrá al [SQL Editor de tu proyecto Supabase](https://supabase.com/dashboard/project/cnorswwbdzkfuwkutytc/sql/new).
-2. Pegá el contenido de [`supabase/migrations/0001_init.sql`](./supabase/migrations/0001_init.sql) y ejecutalo.
+1. Entrá a **Database → SQL Editor → New query** en tu [proyecto Supabase](https://supabase.com/dashboard/project/cnorswwbdzkfuwkutytc/sql/new) (no uses el asistente de IA del dashboard, puede alterar el SQL al pegarlo).
+2. Pegá y ejecutá [`0001_tables.sql`](./supabase/migrations/0001_tables.sql).
+3. En una query nueva, pegá y ejecutá [`0002_functions.sql`](./supabase/migrations/0002_functions.sql).
+4. En otra query nueva, pegá y ejecutá [`0003_policies.sql`](./supabase/migrations/0003_policies.sql).
+
+Si algo falla, revisá en qué paso fue: cada archivo es independiente, así que podés arreglar y re-ejecutar solo ese paso sin tocar los anteriores.
 
 Esto crea:
 - `profiles`, `couple_spaces`, `memberships`, `invitations`
