@@ -2,7 +2,8 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../context/AuthContext'
 import { Button } from '../../components/ui/Button'
-import { LoopyMascot } from '../../components/LoopyMascot'
+import { Icon } from '../../components/ui/Icon'
+import { Page, PageHeader, EmptyState, IconBtn, FormCard } from '../../components/ui/PageShell'
 import type { Song } from '../../types/db'
 
 const API_URL = import.meta.env.VITE_API_URL as string
@@ -20,18 +21,11 @@ export default function Songs() {
 
   async function load() {
     if (!space) return
-    const { data } = await supabase
-      .from('songs')
-      .select('*')
-      .eq('space_id', space.id)
-      .order('fecha', { ascending: false })
+    const { data } = await supabase.from('songs').select('*').eq('space_id', space.id).order('fecha', { ascending: false })
     setSongs((data as Song[]) ?? [])
     setLoading(false)
   }
-
-  useEffect(() => {
-    load()
-  }, [space])
+  useEffect(() => { load() }, [space])
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -45,9 +39,7 @@ export default function Songs() {
 
     if (url.trim()) {
       try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession()
+        const { data: { session } } = await supabase.auth.getSession()
         if (session) {
           const res = await fetch(`${API_URL}/api/song-preview?url=${encodeURIComponent(url)}`, {
             headers: { Authorization: `Bearer ${session.access_token}` },
@@ -61,27 +53,17 @@ export default function Songs() {
           }
         }
       } catch {
-        // preview is best-effort; the song still gets saved without it
+        // preview is best-effort
       }
     }
 
     await supabase.from('songs').insert({
-      space_id: space.id,
-      agregado_por: user.id,
+      space_id: space.id, agregado_por: user.id,
       titulo: titulo.trim() || autoTitulo || 'Sin título',
       artista: artista || autoArtista || null,
-      url: url || null,
-      nota: nota || null,
-      imagen,
-      plataforma,
+      url: url || null, nota: nota || null, imagen, plataforma,
     })
-    setTitulo('')
-    setArtista('')
-    setUrl('')
-    setNota('')
-    setOpen(false)
-    setSaving(false)
-    load()
+    setTitulo(''); setArtista(''); setUrl(''); setNota(''); setOpen(false); setSaving(false); load()
   }
 
   async function markAsToday(id: string) {
@@ -90,47 +72,38 @@ export default function Songs() {
     await supabase.from('songs').update({ es_del_dia: true }).eq('id', id)
     load()
   }
-
-  async function handleDelete(id: string) {
-    await supabase.from('songs').delete().eq('id', id)
-    load()
-  }
+  async function handleDelete(id: string) { await supabase.from('songs').delete().eq('id', id); load() }
 
   const songOfTheDay = songs.find((s) => s.es_del_dia)
 
   return (
-    <div className="mx-auto max-w-[800px] p-6 md:p-8">
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl font-semibold text-ink">Música</h1>
-        <Button variant="primary" onClick={() => setOpen((v) => !v)}>
-          {open ? 'Cancelar' : '+ Agregar'}
-        </Button>
-      </div>
+    <Page>
+      <PageHeader
+        icon="musica" title="Música" subtitle="La playlist que arman juntos."
+        action={
+          <Button variant={open ? 'secondary' : 'primary'} onClick={() => setOpen((v) => !v)}>
+            <Icon name={open ? 'close' : 'plus'} bare size={20} tone="lavender" />
+            {open ? 'Cancelar' : 'Agregar'}
+          </Button>
+        }
+      />
 
       {songOfTheDay && (
-        <div className="mt-6 flex gap-4 overflow-hidden rounded-[var(--radius-lg)] bg-grad-loop p-5">
-          {songOfTheDay.imagen && (
-            <img
-              src={songOfTheDay.imagen}
-              alt=""
-              className="h-20 w-20 shrink-0 rounded-[var(--radius-md)] object-cover"
-            />
+        <div className="card relative mb-6 flex items-center gap-4 overflow-hidden bg-grad-loop">
+          <div className="pointer-events-none absolute -right-8 -top-10 h-40 w-40 rounded-full bg-white/40 blur-2xl" />
+          {songOfTheDay.imagen ? (
+            <img src={songOfTheDay.imagen} alt="" className="relative h-24 w-24 shrink-0 rounded-[28px] object-cover shadow-[var(--shadow-loopy-md)]" />
+          ) : (
+            <Icon name="musica" size={88} className="relative" />
           )}
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-ink/70">
-              🎵 Canción del día
-            </p>
-            <p className="mt-1 font-display text-xl font-semibold text-ink">{songOfTheDay.titulo}</p>
-            {songOfTheDay.artista && <p className="text-ink/80">{songOfTheDay.artista}</p>}
-            {songOfTheDay.nota && <p className="mt-2 font-hand text-lg text-ink">{songOfTheDay.nota}</p>}
+          <div className="relative min-w-0">
+            <p className="eyebrow m-0">Canción del día</p>
+            <p className="m-0 mt-1 truncate font-display text-2xl font-semibold text-ink">{songOfTheDay.titulo}</p>
+            {songOfTheDay.artista && <p className="m-0 truncate text-ink/80">{songOfTheDay.artista}</p>}
+            {songOfTheDay.nota && <p className="m-0 mt-1 font-hand text-xl leading-tight text-ink">“{songOfTheDay.nota}”</p>}
             {songOfTheDay.url && (
-              <a
-                href={songOfTheDay.url}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-2 inline-block text-sm font-semibold text-ink underline"
-              >
-                Escuchar →
+              <a href={songOfTheDay.url} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/80 px-4 py-2 text-sm font-bold text-plum no-underline hover:bg-white">
+                <Icon name="play" bare size={16} /> Escuchar
               </a>
             )}
           </div>
@@ -138,87 +111,37 @@ export default function Songs() {
       )}
 
       {open && (
-        <form
-          onSubmit={handleSubmit}
-          className="mt-6 flex flex-col gap-3 rounded-[var(--radius-lg)] bg-surface p-6 shadow-[var(--shadow-loopy-sm)]"
-        >
-          <input
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="Link de Spotify / YouTube / Apple Music"
-            className="h-12 rounded-[var(--radius-sm)] bg-surface-soft px-4 outline-none focus:ring-2 focus:ring-lavender"
-          />
-          <input
-            required={!url.trim()}
-            value={titulo}
-            onChange={(e) => setTitulo(e.target.value)}
-            placeholder="Título de la canción"
-            className="h-12 rounded-[var(--radius-sm)] bg-surface-soft px-4 outline-none focus:ring-2 focus:ring-lavender"
-          />
-          <input
-            value={artista}
-            onChange={(e) => setArtista(e.target.value)}
-            placeholder="Artista (opcional, se autocompleta del link)"
-            className="h-12 rounded-[var(--radius-sm)] bg-surface-soft px-4 outline-none focus:ring-2 focus:ring-lavender"
-          />
-          <input
-            value={nota}
-            onChange={(e) => setNota(e.target.value)}
-            placeholder="Nota (opcional)"
-            className="h-12 rounded-[var(--radius-sm)] bg-surface-soft px-4 font-hand text-lg outline-none focus:ring-2 focus:ring-lavender"
-          />
-          <Button type="submit" variant="primary" disabled={saving}>
-            {saving ? 'Guardando…' : 'Agregar canción'}
-          </Button>
-        </form>
+        <FormCard onSubmit={handleSubmit}>
+          <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="Link de Spotify / YouTube / Apple Music" className="field" />
+          <input required={!url.trim()} value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Título de la canción" className="field" />
+          <input value={artista} onChange={(e) => setArtista(e.target.value)} placeholder="Artista (opcional)" className="field" />
+          <input value={nota} onChange={(e) => setNota(e.target.value)} placeholder="Nota (opcional)" className="field font-hand text-xl" />
+          <Button type="submit" disabled={saving}>{saving ? 'Guardando…' : 'Agregar canción'}</Button>
+        </FormCard>
       )}
 
-      <div className="mt-6 flex flex-col gap-3">
-        {!loading && songs.length === 0 && (
-          <div className="flex flex-col items-center gap-3 py-12 text-center">
-            <LoopyMascot expression="thinking" />
-            <p className="text-ink-soft">Todavía no hay canciones. ¿Agregamos la primera?</p>
-          </div>
-        )}
+      <div className="flex flex-col gap-3">
+        {!loading && songs.length === 0 && <EmptyState text="Todavía no hay canciones. ¿Agregamos la primera?" />}
         {songs.map((song) => (
-          <div
-            key={song.id}
-            className="flex items-center justify-between gap-3 rounded-[var(--radius-md)] border border-line bg-surface p-4"
-          >
-            <div className="flex min-w-0 items-center gap-3">
-              {song.imagen ? (
-                <img
-                  src={song.imagen}
-                  alt=""
-                  className="h-12 w-12 shrink-0 rounded-[var(--radius-sm)] object-cover"
-                />
-              ) : (
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-surface-soft text-xl">
-                  🎵
-                </div>
-              )}
-              <div className="min-w-0">
-                <p className="truncate font-semibold text-ink">{song.titulo}</p>
-                {song.artista && <p className="truncate text-sm text-ink-soft">{song.artista}</p>}
-              </div>
+          <div key={song.id} className="card card-lift flex items-center gap-3 !p-3 md:!p-4">
+            {song.imagen ? (
+              <img src={song.imagen} alt="" className="h-14 w-14 shrink-0 rounded-[20px] object-cover" />
+            ) : (
+              <Icon name="musica" size={56} />
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="m-0 truncate font-bold text-ink">{song.titulo}</p>
+              {song.artista && <p className="m-0 truncate text-sm text-ink-soft">{song.artista}</p>}
             </div>
-            <div className="flex shrink-0 items-center gap-2">
-              {!song.es_del_dia && (
-                <Button variant="secondary" onClick={() => markAsToday(song.id)}>
-                  Canción del día
-                </Button>
-              )}
-              <button
-                onClick={() => handleDelete(song.id)}
-                className="px-2 text-sm font-semibold text-error"
-                aria-label="Eliminar canción"
-              >
-                Eliminar
-              </button>
-            </div>
+            {song.es_del_dia ? (
+              <span className="hidden items-center gap-1.5 rounded-full bg-[#FFF0BF] px-3 py-1.5 text-xs font-bold sm:inline-flex"><Icon name="star" bare size={14} /> Del día</span>
+            ) : (
+              <IconBtn icon="star" label="Marcar como canción del día" onClick={() => markAsToday(song.id)} />
+            )}
+            <IconBtn icon="trash" label="Eliminar canción" danger onClick={() => handleDelete(song.id)} />
           </div>
         ))}
       </div>
-    </div>
+    </Page>
   )
 }

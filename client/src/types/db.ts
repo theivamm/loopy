@@ -162,3 +162,28 @@ export interface Idea {
   votos: number
   creado_en: string
 }
+
+export interface MoodLog {
+  id: string
+  space_id: string
+  user_id: string
+  fecha: string
+  mood: string
+  creado_en: string
+}
+
+export interface Question {
+  id: string
+  orden: number
+  texto: string
+}
+
+export interface QuestionAnswer {
+  id: string
+  space_id: string
+  user_id: string
+  question_id: string
+  fecha: string
+  respuesta: string
+  creado_en: string
+}

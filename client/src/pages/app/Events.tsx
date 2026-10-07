@@ -2,12 +2,21 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../context/AuthContext'
 import { Button } from '../../components/ui/Button'
-import { LoopyMascot } from '../../components/LoopyMascot'
+import { Icon, type IconName } from '../../components/ui/Icon'
+import { Page, PageHeader, EmptyState, IconBtn, FormCard, Chip } from '../../components/ui/PageShell'
 import type { Event } from '../../types/db'
 
+const TIPOS: { key: string; icon: IconName }[] = [
+  { key: 'general', icon: 'star' },
+  { key: 'cita', icon: 'heart' },
+  { key: 'aniversario', icon: 'cake' },
+  { key: 'viaje', icon: 'plane' },
+  { key: 'cumpleaños', icon: 'gift' },
+]
+const tipoIcon = (t: string | null): IconName => TIPOS.find((x) => x.key === t)?.icon ?? 'star'
+
 function daysUntil(iso: string) {
-  const diff = new Date(iso).getTime() - Date.now()
-  return Math.ceil(diff / (1000 * 60 * 60 * 24))
+  return Math.ceil((new Date(iso).getTime() - Date.now()) / 86400000)
 }
 
 export default function Events() {
@@ -22,37 +31,20 @@ export default function Events() {
 
   async function load() {
     if (!space) return
-    const { data } = await supabase
-      .from('events')
-      .select('*')
-      .eq('space_id', space.id)
-      .gte('inicio', new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString())
-      .order('inicio', { ascending: true })
+    const { data } = await supabase.from('events').select('*').eq('space_id', space.id)
+      .gte('inicio', new Date(Date.now() - 86400000).toISOString()).order('inicio', { ascending: true })
     setEvents((data as Event[]) ?? [])
     setLoading(false)
   }
-
-  useEffect(() => {
-    load()
-  }, [space])
+  useEffect(() => { load() }, [space])
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!space || !user || !titulo.trim() || !inicio) return
-
     if (editingId) {
-      await supabase
-        .from('events')
-        .update({ titulo, inicio: new Date(inicio).toISOString(), tipo })
-        .eq('id', editingId)
+      await supabase.from('events').update({ titulo, inicio: new Date(inicio).toISOString(), tipo }).eq('id', editingId)
     } else {
-      await supabase.from('events').insert({
-        space_id: space.id,
-        creado_por: user.id,
-        titulo,
-        inicio: new Date(inicio).toISOString(),
-        tipo,
-      })
+      await supabase.from('events').insert({ space_id: space.id, creado_por: user.id, titulo, inicio: new Date(inicio).toISOString(), tipo })
     }
     cancel()
     load()
@@ -63,127 +55,87 @@ export default function Events() {
     d.setMinutes(d.getMinutes() - d.getTimezoneOffset())
     return d.toISOString().slice(0, 16)
   }
-
   function startEdit(event: Event) {
-    setEditingId(event.id)
-    setTitulo(event.titulo)
-    setInicio(toDatetimeLocal(event.inicio))
-    setTipo(event.tipo ?? 'general')
-    setOpen(true)
+    setEditingId(event.id); setTitulo(event.titulo); setInicio(toDatetimeLocal(event.inicio)); setTipo(event.tipo ?? 'general'); setOpen(true)
   }
-
-  function cancel() {
-    setOpen(false)
-    setEditingId(null)
-    setTitulo('')
-    setInicio('')
-    setTipo('general')
-  }
-
-  async function handleDelete(id: string) {
-    await supabase.from('events').delete().eq('id', id)
-    load()
-  }
+  function cancel() { setOpen(false); setEditingId(null); setTitulo(''); setInicio(''); setTipo('general') }
+  async function handleDelete(id: string) { await supabase.from('events').delete().eq('id', id); load() }
 
   const next = events[0]
 
   return (
-    <div className="mx-auto max-w-[800px] p-6 md:p-8">
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl font-semibold text-ink">Calendario de eventos</h1>
-        <Button variant="primary" onClick={() => (open ? cancel() : setOpen(true))}>
-          {open ? 'Cancelar' : '+ Agregar'}
-        </Button>
-      </div>
+    <Page>
+      <PageHeader
+        icon="calendario"
+        title="Calendario"
+        subtitle="Citas, viajes y fechas que importan."
+        action={
+          <Button onClick={() => (open ? cancel() : setOpen(true))} variant={open ? 'secondary' : 'primary'}>
+            <Icon name={open ? 'close' : 'plus'} bare size={20} tone="lavender" />
+            {open ? 'Cancelar' : 'Agregar'}
+          </Button>
+        }
+      />
+
+      {open && (
+        <FormCard onSubmit={handleSubmit}>
+          <input required value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="¿Qué van a hacer?" className="field" />
+          <input required type="datetime-local" value={inicio} onChange={(e) => setInicio(e.target.value)} className="field" />
+          <div className="flex flex-wrap gap-2">
+            {TIPOS.map((t) => (
+              <button
+                type="button" key={t.key} onClick={() => setTipo(t.key)}
+                className={`inline-flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-4 text-sm font-bold capitalize transition-all ${
+                  tipo === t.key ? 'bg-lilac-mist text-plum shadow-[var(--shadow-loopy-md)]' : 'bg-surface-soft text-ink-soft'
+                }`}
+              >
+                <Icon name={t.icon} size={30} />{t.key}
+              </button>
+            ))}
+          </div>
+          <Button type="submit">{editingId ? 'Guardar cambios' : 'Agendar'}</Button>
+        </FormCard>
+      )}
 
       {next && (
-        <div className="mt-6 rounded-[var(--radius-lg)] bg-grad-dream p-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink/70">Próximo</p>
-          <p className="mt-1 font-display text-xl font-semibold text-ink">{next.titulo}</p>
-          <p className="text-ink/80">
-            {new Date(next.inicio).toLocaleDateString('es-AR', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-            })}
-            {' · '}
-            {daysUntil(next.inicio) === 0 ? '¡Hoy!' : `en ${daysUntil(next.inicio)} días`}
-          </p>
+        <div className="card relative mb-6 overflow-hidden bg-grad-dream">
+          <div className="pointer-events-none absolute -right-8 -top-10 h-40 w-40 rounded-full bg-white/40 blur-2xl" />
+          <p className="eyebrow relative m-0">Próximo</p>
+          <p className="relative m-0 mt-1 font-display text-2xl font-semibold text-ink md:text-3xl">{next.titulo}</p>
+          <div className="relative mt-3 flex flex-wrap items-center gap-2">
+            <Chip tone="sky">
+              {new Date(next.inicio).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
+            </Chip>
+            <Chip tone="lavender">{daysUntil(next.inicio) <= 0 ? '¡Hoy!' : `en ${daysUntil(next.inicio)} días`}</Chip>
+          </div>
         </div>
       )}
 
-      {open && (
-        <form
-          onSubmit={handleSubmit}
-          className="mt-6 flex flex-col gap-3 rounded-[var(--radius-lg)] bg-surface p-6 shadow-[var(--shadow-loopy-sm)]"
-        >
-          <input
-            required
-            value={titulo}
-            onChange={(e) => setTitulo(e.target.value)}
-            placeholder="¿Qué van a hacer?"
-            className="h-12 rounded-[var(--radius-sm)] bg-surface-soft px-4 outline-none focus:ring-2 focus:ring-lavender"
-          />
-          <input
-            required
-            type="datetime-local"
-            value={inicio}
-            onChange={(e) => setInicio(e.target.value)}
-            className="h-12 rounded-[var(--radius-sm)] bg-surface-soft px-4 outline-none focus:ring-2 focus:ring-lavender"
-          />
-          <select
-            value={tipo}
-            onChange={(e) => setTipo(e.target.value)}
-            className="h-12 rounded-[var(--radius-sm)] bg-surface-soft px-4 capitalize outline-none focus:ring-2 focus:ring-lavender"
-          >
-            {['general', 'cita', 'aniversario', 'viaje', 'cumpleaños'].map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
-          <Button type="submit" variant="primary">
-            {editingId ? 'Guardar cambios' : 'Agendar'}
-          </Button>
-        </form>
-      )}
-
-      <div className="mt-6 flex flex-col gap-3">
-        {!loading && events.length === 0 && (
-          <div className="flex flex-col items-center gap-3 py-12 text-center">
-            <LoopyMascot expression="thinking" />
-            <p className="text-ink-soft">Nada agendado todavía.</p>
-          </div>
-        )}
-        {events.map((event) => (
-          <div
-            key={event.id}
-            className="flex items-center justify-between rounded-[var(--radius-md)] border border-line bg-surface p-4"
-          >
-            <div>
-              <p className="font-semibold text-ink">{event.titulo}</p>
-              <p className="text-sm text-ink-soft capitalize">
-                {new Date(event.inicio).toLocaleString('es-AR', {
-                  day: 'numeric',
-                  month: 'short',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-                {' · '}
-                {event.tipo}
-              </p>
+      <div className="flex flex-col gap-3">
+        {!loading && events.length === 0 && <EmptyState text="Nada agendado todavía. ¿Planeamos algo?" />}
+        {events.map((event) => {
+          const d = new Date(event.inicio)
+          return (
+            <div key={event.id} className="card card-lift flex items-center gap-3 !p-4 md:gap-4">
+              <div className="w-[58px] shrink-0 rounded-[20px] bg-[#EAF4FF] py-2 text-center">
+                <div className="text-[11px] font-extrabold uppercase text-coral">{d.toLocaleDateString('es-AR', { month: 'short' }).replace('.', '')}</div>
+                <div className="font-display text-2xl font-semibold leading-none">{d.getDate()}</div>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="m-0 truncate font-bold text-ink">{event.titulo}</p>
+                <p className="m-0 flex items-center gap-1.5 text-[13px] capitalize text-ink-soft">
+                  <Icon name={tipoIcon(event.tipo)} size={20} bare />
+                  {d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })} · {event.tipo}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <IconBtn icon="edit" label="Editar" onClick={() => startEdit(event)} />
+                <IconBtn icon="trash" label="Eliminar" danger onClick={() => handleDelete(event.id)} />
+              </div>
             </div>
-            <div className="flex gap-3 text-xs font-semibold">
-              <button onClick={() => startEdit(event)} className="text-plum">
-                Editar
-              </button>
-              <button onClick={() => handleDelete(event.id)} className="text-error">
-                Eliminar
-              </button>
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
-    </div>
+    </Page>
   )
 }

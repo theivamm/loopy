@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import { Button } from '../components/ui/Button'
-import { LoopyMascot } from '../components/LoopyMascot'
+import { AuthShell } from '../components/ui/AuthShell'
+import { Icon } from '../components/ui/Icon'
 import type { Invitation } from '../types/db'
 
 export default function InvitePage() {
@@ -12,19 +13,15 @@ export default function InvitePage() {
   const [invitation, setInvitation] = useState<Invitation | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    if (!authLoading && space) {
-      navigate('/app', { replace: true })
-    }
+    if (!authLoading && space) navigate('/app', { replace: true })
   }, [authLoading, space, navigate])
 
   useEffect(() => {
     async function loadOrCreateInvitation() {
-      const { data: membership } = await supabase
-        .from('memberships')
-        .select('space_id')
-        .maybeSingle()
+      const { data: membership } = await supabase.from('memberships').select('space_id').maybeSingle()
 
       if (!membership) {
         setLoading(false)
@@ -45,9 +42,7 @@ export default function InvitePage() {
         return
       }
 
-      const { data, error } = await supabase.rpc('create_invitation', {
-        p_space_id: membership.space_id,
-      })
+      const { data, error } = await supabase.rpc('create_invitation', { p_space_id: membership.space_id })
       if (error) setError(error.message)
       else setInvitation(data as Invitation)
       setLoading(false)
@@ -58,62 +53,54 @@ export default function InvitePage() {
 
   const inviteUrl = invitation ? `${window.location.origin}/invite/${invitation.token}` : ''
 
+  function copy() {
+    navigator.clipboard.writeText(inviteUrl)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-grad-hero px-4 py-12">
-      <div className="w-full max-w-md rounded-[var(--radius-xl)] bg-surface p-8 text-center shadow-[var(--shadow-loopy-lg)]">
-        <div className="mb-4 flex justify-center">
-          <LoopyMascot size={96} expression="waiting" />
-        </div>
-        <h1 className="font-display text-2xl font-semibold text-ink">
-          Loopy está esperando a tu otra mitad 🧶
-        </h1>
-        <p className="mt-2 text-ink-soft">Compartí este link o código para invitarla/o.</p>
+    <AuthShell
+      title="Loopy está esperando a tu otra mitad"
+      subtitle="Compartí este link o código para invitarla/o."
+      expression="waiting"
+      mascotSize={116}
+    >
+      {loading && <p className="text-center text-ink-muted">Preparando la invitación…</p>}
+      {error && <p className="text-center text-sm text-error">{error}</p>}
 
-        {loading && <p className="mt-6 text-ink-muted">Preparando la invitación…</p>}
-        {error && <p className="mt-6 text-sm text-error">{error}</p>}
-
-        {invitation && (
-          <div className="mt-6 flex flex-col gap-4">
-            <div className="rounded-[var(--radius-md)] bg-surface-soft p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Código</p>
-              <p className="font-display text-3xl font-semibold tracking-widest text-plum">
-                {invitation.codigo}
-              </p>
-            </div>
-
-            <input
-              readOnly
-              value={inviteUrl}
-              onFocus={(e) => e.target.select()}
-              className="h-12 rounded-[var(--radius-sm)] bg-surface-soft px-4 text-center text-sm text-ink-soft outline-none"
-            />
-
-            <div className="flex gap-3">
-              <Button
-                variant="secondary"
-                className="flex-1"
-                onClick={() => navigator.clipboard.writeText(inviteUrl)}
-              >
-                Copiar link
-              </Button>
-              <a
-                className="flex-1"
-                href={`https://wa.me/?text=${encodeURIComponent(
-                  `Te invito a nuestro Loopy 🧶 ${inviteUrl}`,
-                )}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <Button variant="primary" className="w-full">
-                  Enviar por WhatsApp
-                </Button>
-              </a>
-            </div>
-
-            <p className="text-xs text-ink-muted">Vence el {new Date(invitation.vence_en).toLocaleDateString()}</p>
+      {invitation && (
+        <div className="flex flex-col gap-4">
+          <div className="rounded-[28px] bg-gradient-to-br from-lilac-mist to-[#FFE9F1] p-4 text-center">
+            <p className="eyebrow m-0">Código</p>
+            <p className="m-0 mt-1 font-display text-4xl font-semibold tracking-[0.25em] text-plum">{invitation.codigo}</p>
           </div>
-        )}
-      </div>
-    </div>
+
+          <input readOnly value={inviteUrl} onFocus={(e) => e.target.select()} className="field text-center text-sm text-ink-soft" />
+
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button variant="secondary" className="flex-1" onClick={copy}>
+              <Icon name={copied ? 'check' : 'copy'} bare size={20} />
+              {copied ? '¡Copiado!' : 'Copiar link'}
+            </Button>
+            <a
+              className="flex flex-1 no-underline"
+              href={`https://wa.me/?text=${encodeURIComponent(`Te invito a nuestro Loopy: ${inviteUrl}`)}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Button className="w-full">
+                <Icon name="whatsapp" bare size={20} tone="mint" />
+                WhatsApp
+              </Button>
+            </a>
+          </div>
+
+          <p className="m-0 text-center text-xs text-ink-muted">
+            Vence el {new Date(invitation.vence_en).toLocaleDateString()}
+          </p>
+        </div>
+      )}
+    </AuthShell>
   )
 }

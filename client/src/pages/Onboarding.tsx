@@ -3,7 +3,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import { Button } from '../components/ui/Button'
+import { AuthShell } from '../components/ui/AuthShell'
 import { LoopyMascot } from '../components/LoopyMascot'
+import { Blobs } from '../components/ui/Blobs'
 
 const COLORS = [
   { key: 'lavender', hex: '#C9B8FF' },
@@ -62,99 +64,74 @@ export default function Onboarding() {
 
   if (authLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-grad-hero">
-        <LoopyMascot size={64} />
+      <div className="relative flex min-h-screen items-center justify-center">
+        <Blobs />
+        <LoopyMascot size={96} />
       </div>
     )
   }
 
   if (!user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-grad-hero px-4 text-center">
-        <div className="w-full max-w-sm rounded-[var(--radius-xl)] bg-surface p-8 shadow-[var(--shadow-loopy-lg)]">
-          <div className="mb-6 flex justify-center">
-            <LoopyMascot size={72} expression="waiting" />
-          </div>
-          <h1 className="font-display text-2xl font-semibold text-ink">Iniciá sesión primero</h1>
-          <p className="mt-2 text-ink-soft">
-            Si acabás de registrarte, confirmá tu email y después iniciá sesión para seguir.
-          </p>
-          <Link to="/login">
-            <Button variant="primary" className="mt-6 w-full">
-              Ir a iniciar sesión
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <AuthShell title="Iniciá sesión primero" expression="waiting">
+        <p className="mt-0 text-center text-ink-soft">
+          Si acabás de registrarte, confirmá tu email y después iniciá sesión para seguir.
+        </p>
+        <Link to="/login" className="no-underline">
+          <Button className="mt-4 w-full">Ir a iniciar sesión</Button>
+        </Link>
+      </AuthShell>
     )
   }
 
+  const hex = COLORS.find((c) => c.key === colorHilo)?.hex
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-grad-hero px-4 py-12">
-      <div className="w-full max-w-md rounded-[var(--radius-xl)] bg-surface p-8 shadow-[var(--shadow-loopy-lg)]">
-        <div className="mb-6 flex justify-center">
-          <LoopyMascot size={72} colorA={COLORS.find((c) => c.key === colorHilo)?.hex} />
-        </div>
-        <h1 className="text-center font-display text-2xl font-semibold text-ink">
-          Un par de cositas antes de empezar
-        </h1>
-        <form className="mt-6 flex flex-col gap-5" onSubmit={handleSubmit}>
-          <label className="flex flex-col gap-1.5 text-sm font-semibold text-ink-soft">
-            Tu apodo
-            <input
-              required
-              value={apodo}
-              onChange={(e) => setApodo(e.target.value)}
-              placeholder="¿Cómo te dicen?"
-              className="h-12 rounded-[var(--radius-sm)] bg-surface-soft px-4 font-normal text-ink outline-none focus:ring-2 focus:ring-lavender"
-            />
-          </label>
+    <AuthShell
+      title="Un par de cositas antes de empezar"
+      subtitle="Tu hilo de color será parte de su Loopy."
+      colorA={hex}
+      maxWidth={480}
+    >
+      <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+        <label className="flex flex-col gap-2 text-sm font-bold text-ink-soft">
+          Tu apodo
+          <input required value={apodo} onChange={(e) => setApodo(e.target.value)} placeholder="¿Cómo te dicen?" className="field font-normal" />
+        </label>
 
-          <div className="flex flex-col gap-1.5 text-sm font-semibold text-ink-soft">
-            Elegí tu color de hilo 🧶
-            <div className="flex gap-2">
-              {COLORS.map((c) => (
-                <button
-                  type="button"
-                  key={c.key}
-                  onClick={() => setColorHilo(c.key)}
-                  className={`h-9 w-9 rounded-full transition-transform ${
-                    colorHilo === c.key ? 'scale-110 ring-2 ring-offset-2 ring-plum' : ''
-                  }`}
-                  style={{ background: c.hex }}
-                  aria-label={c.key}
-                />
-              ))}
-            </div>
+        <div className="flex flex-col gap-2 text-sm font-bold text-ink-soft">
+          Elegí tu color de hilo
+          <div className="flex flex-wrap gap-3">
+            {COLORS.map((c) => (
+              <button
+                type="button"
+                key={c.key}
+                onClick={() => setColorHilo(c.key)}
+                className={`h-11 w-11 rounded-full shadow-[inset_0_2px_0_rgba(255,255,255,.7),0_4px_10px_rgba(124,92,219,.15)] transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+                  colorHilo === c.key ? 'scale-110 ring-[3px] ring-white outline outline-[3px] outline-plum' : 'hover:scale-105'
+                }`}
+                style={{ background: c.hex }}
+                aria-label={c.key}
+              />
+            ))}
           </div>
+        </div>
 
-          <label className="flex flex-col gap-1.5 text-sm font-semibold text-ink-soft">
-            Nombre de su espacio
-            <input
-              required
-              value={spaceName}
-              onChange={(e) => setSpaceName(e.target.value)}
-              placeholder="Juli & Tomi"
-              className="h-12 rounded-[var(--radius-sm)] bg-surface-soft px-4 font-normal text-ink outline-none focus:ring-2 focus:ring-lavender"
-            />
-          </label>
+        <label className="flex flex-col gap-2 text-sm font-bold text-ink-soft">
+          Nombre de su espacio
+          <input required value={spaceName} onChange={(e) => setSpaceName(e.target.value)} placeholder="Juli & Tomi" className="field font-normal" />
+        </label>
 
-          <label className="flex flex-col gap-1.5 text-sm font-semibold text-ink-soft">
-            Fecha de aniversario (opcional)
-            <input
-              type="date"
-              value={aniversario}
-              onChange={(e) => setAniversario(e.target.value)}
-              className="h-12 rounded-[var(--radius-sm)] bg-surface-soft px-4 font-normal text-ink outline-none focus:ring-2 focus:ring-lavender"
-            />
-          </label>
+        <label className="flex flex-col gap-2 text-sm font-bold text-ink-soft">
+          Fecha de aniversario (opcional)
+          <input type="date" value={aniversario} onChange={(e) => setAniversario(e.target.value)} className="field font-normal" />
+        </label>
 
-          {error && <p className="text-sm text-error">{error}</p>}
-          <Button type="submit" variant="primary" disabled={loading}>
-            {loading ? 'Creando su espacio…' : 'Crear su espacio'}
-          </Button>
-        </form>
-      </div>
-    </div>
+        {error && <p className="m-0 rounded-2xl bg-[#FFE6EA] px-4 py-2 text-sm text-error">{error}</p>}
+        <Button type="submit" disabled={loading} className="w-full">
+          {loading ? 'Creando su espacio…' : 'Crear su espacio'}
+        </Button>
+      </form>
+    </AuthShell>
   )
 }

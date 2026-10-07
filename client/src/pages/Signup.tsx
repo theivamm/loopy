@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { Button } from '../components/ui/Button'
-import { LoopyMascot } from '../components/LoopyMascot'
+import { AuthShell } from '../components/ui/AuthShell'
 
 export default function Signup() {
   const navigate = useNavigate()
@@ -24,7 +24,6 @@ export default function Signup() {
     }
 
     if (!data.session) {
-      // email confirmation is required before a session exists
       setNeedsConfirmation(true)
       return
     }
@@ -35,63 +34,32 @@ export default function Signup() {
 
   if (needsConfirmation) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-grad-hero px-4 text-center">
-        <div className="w-full max-w-sm rounded-[var(--radius-xl)] bg-surface p-8 shadow-[var(--shadow-loopy-lg)]">
-          <div className="mb-6 flex justify-center">
-            <LoopyMascot size={72} expression="waiting" />
-          </div>
-          <h1 className="font-display text-2xl font-semibold text-ink">Revisá tu email</h1>
-          <p className="mt-2 text-ink-soft">
-            Te mandamos un link a <strong>{email}</strong> para confirmar tu cuenta. Una vez
-            confirmada, iniciá sesión para seguir.
-          </p>
-          <Link to="/login">
-            <Button variant="primary" className="mt-6 w-full">
-              Ir a iniciar sesión
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <AuthShell title="Revisá tu email" expression="waiting">
+        <p className="mt-0 text-center text-ink-soft">
+          Te mandamos un link a <strong className="text-ink">{email}</strong> para confirmar tu cuenta. Una vez
+          confirmada, iniciá sesión para seguir.
+        </p>
+        <Link to="/login" className="no-underline">
+          <Button className="mt-4 w-full">Ir a iniciar sesión</Button>
+        </Link>
+      </AuthShell>
     )
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-grad-hero px-4">
-      <div className="w-full max-w-sm rounded-[var(--radius-xl)] bg-surface p-8 shadow-[var(--shadow-loopy-lg)]">
-        <div className="mb-6 flex justify-center">
-          <LoopyMascot size={72} expression="celebrating" />
-        </div>
-        <h1 className="text-center font-display text-2xl font-semibold text-ink">Creemos su espacio</h1>
-        <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit}>
-          <input
-            type="email"
-            required
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="h-12 rounded-[var(--radius-sm)] bg-surface-soft px-4 outline-none focus:ring-2 focus:ring-lavender"
-          />
-          <input
-            type="password"
-            required
-            minLength={6}
-            placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="h-12 rounded-[var(--radius-sm)] bg-surface-soft px-4 outline-none focus:ring-2 focus:ring-lavender"
-          />
-          {error && <p className="text-sm text-error">{error}</p>}
-          <Button type="submit" variant="primary" disabled={loading}>
-            {loading ? 'Creando…' : 'Crear cuenta'}
-          </Button>
-        </form>
-        <p className="mt-4 text-center text-sm text-ink-soft">
-          ¿Ya tienen cuenta?{' '}
-          <Link to="/login" className="font-semibold text-plum">
-            Inicien sesión
-          </Link>
-        </p>
-      </div>
-    </div>
+    <AuthShell title="Creemos su espacio" subtitle="Dos vidas, un mismo lazo." expression="celebrating">
+      <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
+        <input type="email" required placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="field" />
+        <input type="password" required minLength={6} placeholder="Contraseña (mín. 6 caracteres)" value={password} onChange={(e) => setPassword(e.target.value)} className="field" />
+        {error && <p className="m-0 rounded-2xl bg-[#FFE6EA] px-4 py-2 text-sm text-error">{error}</p>}
+        <Button type="submit" disabled={loading} className="mt-1 w-full">
+          {loading ? 'Creando…' : 'Crear cuenta'}
+        </Button>
+      </form>
+      <p className="mb-0 mt-5 text-center text-sm text-ink-soft">
+        ¿Ya tienen cuenta?{' '}
+        <Link to="/login" className="font-bold text-plum no-underline hover:underline">Inicien sesión</Link>
+      </p>
+    </AuthShell>
   )
 }

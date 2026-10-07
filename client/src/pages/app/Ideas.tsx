@@ -2,140 +2,104 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../context/AuthContext'
 import { Button } from '../../components/ui/Button'
-import { LoopyMascot } from '../../components/LoopyMascot'
+import { Icon, type IconName } from '../../components/ui/Icon'
+import { Page, PageHeader, EmptyState, IconBtn, FormCard } from '../../components/ui/PageShell'
 import type { Idea } from '../../types/db'
 
-const CATEGORIES = ['general', 'citas', 'viajes', 'regalos', 'proyectos']
+const CATEGORIES: { key: string; icon: IconName }[] = [
+  { key: 'general', icon: 'ideas' },
+  { key: 'citas', icon: 'heart' },
+  { key: 'viajes', icon: 'plane' },
+  { key: 'regalos', icon: 'gift' },
+  { key: 'proyectos', icon: 'rocket' },
+]
+const catIcon = (c: string | null): IconName => CATEGORIES.find((x) => x.key === c)?.icon ?? 'ideas'
 
 export default function Ideas() {
   const { space, user } = useAuth()
   const [ideas, setIdeas] = useState<Idea[]>([])
   const [titulo, setTitulo] = useState('')
-  const [categoria, setCategoria] = useState(CATEGORIES[0])
+  const [categoria, setCategoria] = useState(CATEGORIES[0].key)
   const [privada, setPrivada] = useState(false)
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(true)
 
   async function load() {
     if (!space || !user) return
-    const { data } = await supabase
-      .from('ideas')
-      .select('*')
-      .eq('space_id', space.id)
-      .or(`privada.eq.false,autor_id.eq.${user.id}`)
-      .order('votos', { ascending: false })
+    const { data } = await supabase.from('ideas').select('*').eq('space_id', space.id)
+      .or(`privada.eq.false,autor_id.eq.${user.id}`).order('votos', { ascending: false })
     setIdeas((data as Idea[]) ?? [])
     setLoading(false)
   }
-
-  useEffect(() => {
-    load()
-  }, [space, user])
+  useEffect(() => { load() }, [space, user])
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!space || !user || !titulo.trim()) return
-    await supabase.from('ideas').insert({
-      space_id: space.id,
-      autor_id: user.id,
-      titulo,
-      categoria,
-      privada,
-    })
-    setTitulo('')
-    setPrivada(false)
-    setOpen(false)
-    load()
+    await supabase.from('ideas').insert({ space_id: space.id, autor_id: user.id, titulo, categoria, privada })
+    setTitulo(''); setPrivada(false); setOpen(false); load()
   }
-
-  async function vote(idea: Idea) {
-    await supabase.from('ideas').update({ votos: idea.votos + 1 }).eq('id', idea.id)
-    load()
-  }
-
-  async function handleDelete(id: string) {
-    await supabase.from('ideas').delete().eq('id', id)
-    load()
-  }
+  async function vote(idea: Idea) { await supabase.from('ideas').update({ votos: idea.votos + 1 }).eq('id', idea.id); load() }
+  async function handleDelete(id: string) { await supabase.from('ideas').delete().eq('id', id); load() }
 
   return (
-    <div className="mx-auto max-w-[800px] p-6 md:p-8">
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl font-semibold text-ink">Ideas</h1>
-        <Button variant="primary" onClick={() => setOpen((v) => !v)}>
-          {open ? 'Cancelar' : '+ Agregar'}
-        </Button>
-      </div>
+    <Page>
+      <PageHeader
+        icon="ideas" title="Ideas" subtitle="Lo que sueñan hacer juntos."
+        action={
+          <Button variant={open ? 'secondary' : 'primary'} onClick={() => setOpen((v) => !v)}>
+            <Icon name={open ? 'close' : 'plus'} bare size={20} tone="lavender" />
+            {open ? 'Cancelar' : 'Agregar'}
+          </Button>
+        }
+      />
 
       {open && (
-        <form
-          onSubmit={handleSubmit}
-          className="mt-6 flex flex-col gap-3 rounded-[var(--radius-lg)] bg-surface p-6 shadow-[var(--shadow-loopy-sm)]"
-        >
-          <input
-            required
-            value={titulo}
-            onChange={(e) => setTitulo(e.target.value)}
-            placeholder="Una idea para los dos…"
-            className="h-12 rounded-[var(--radius-sm)] bg-surface-soft px-4 outline-none focus:ring-2 focus:ring-lavender"
-          />
-          <select
-            value={categoria}
-            onChange={(e) => setCategoria(e.target.value)}
-            className="h-12 rounded-[var(--radius-sm)] bg-surface-soft px-4 capitalize outline-none focus:ring-2 focus:ring-lavender"
-          >
+        <FormCard onSubmit={handleSubmit}>
+          <input required value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Una idea para los dos…" className="field" />
+          <div className="flex flex-wrap gap-2">
             {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
+              <button
+                type="button" key={c.key} onClick={() => setCategoria(c.key)}
+                className={`inline-flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-4 text-sm font-bold capitalize transition-all ${
+                  categoria === c.key ? 'bg-lilac-mist text-plum shadow-[var(--shadow-loopy-md)]' : 'bg-surface-soft text-ink-soft'
+                }`}
+              >
+                <Icon name={c.icon} size={30} />{c.key}
+              </button>
             ))}
-          </select>
-          <label className="flex items-center gap-2 text-sm text-ink-soft">
-            <input type="checkbox" checked={privada} onChange={(e) => setPrivada(e.target.checked)} />
+          </div>
+          <label className="flex items-center gap-3 rounded-full bg-surface-soft px-4 py-3 text-sm text-ink-soft">
+            <input type="checkbox" checked={privada} onChange={(e) => setPrivada(e.target.checked)} className="h-5 w-5 accent-[#7C5CDB]" />
             Guardar como privada (solo yo la veo, por ahora)
           </label>
-          <Button type="submit" variant="primary">
-            Agregar idea
-          </Button>
-        </form>
+          <Button type="submit">Agregar idea</Button>
+        </FormCard>
       )}
 
-      <div className="mt-6 flex flex-col gap-3">
-        {!loading && ideas.length === 0 && (
-          <div className="flex flex-col items-center gap-3 py-12 text-center">
-            <LoopyMascot expression="thinking" />
-            <p className="text-ink-soft">Todavía no hay ideas. ¿Tiramos la primera?</p>
-          </div>
-        )}
+      <div className="flex flex-col gap-3">
+        {!loading && ideas.length === 0 && <EmptyState text="Todavía no hay ideas. ¿Tiramos la primera?" />}
         {ideas.map((idea) => (
-          <div
-            key={idea.id}
-            className="flex items-center justify-between rounded-[var(--radius-md)] border border-line bg-surface p-4"
-          >
-            <div>
-              <p className="font-semibold text-ink">
-                {idea.titulo} {idea.privada && <span className="text-xs text-ink-muted">🔒</span>}
+          <div key={idea.id} className="card card-lift flex items-center gap-3 !p-4">
+            <Icon name={catIcon(idea.categoria)} size={48} />
+            <div className="min-w-0 flex-1">
+              <p className="m-0 flex items-center gap-1.5 font-bold text-ink">
+                <span className="truncate">{idea.titulo}</span>
+                {idea.privada && <Icon name="lock" bare size={16} />}
               </p>
-              <p className="text-xs uppercase tracking-wide text-ink-muted">{idea.categoria}</p>
+              <p className="eyebrow m-0 !text-[11px] text-ink-muted">{idea.categoria}</p>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => vote(idea)}
-                className="flex items-center gap-1 rounded-full bg-lilac-mist px-3 py-1.5 text-sm font-semibold text-plum"
-              >
-                ❤️ {idea.votos}
-              </button>
-              <button
-                onClick={() => handleDelete(idea.id)}
-                className="px-2 text-sm font-semibold text-error"
-                aria-label="Eliminar idea"
-              >
-                Eliminar
-              </button>
-            </div>
+            <button
+              onClick={() => vote(idea)}
+              className="flex items-center gap-1.5 rounded-full bg-[#FFE0EA] px-3.5 py-2 text-sm font-bold text-[#E8588A] transition-transform hover:scale-110 active:scale-90"
+              aria-label="Votar"
+            >
+              <Icon name="heart" bare size={18} /> {idea.votos}
+            </button>
+            <IconBtn icon="trash" label="Eliminar idea" danger onClick={() => handleDelete(idea.id)} />
           </div>
         ))}
       </div>
-    </div>
+    </Page>
   )
 }

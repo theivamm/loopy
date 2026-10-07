@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../context/AuthContext'
 import { THREAD_COLORS, DEFAULT_THREAD_COLOR } from '../../lib/threadColors'
+import { Icon, MoodIcon } from '../ui/Icon'
 import type { Status } from '../../types/db'
 
 const DISPONIBILIDAD_LABEL: Record<string, string> = {
@@ -50,9 +51,7 @@ export function UserStatusMenu() {
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpen(false)
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
@@ -69,26 +68,23 @@ export function UserStatusMenu() {
   const showBubble = Boolean(mine && (bubbleText || mine.emoji))
 
   return (
-    <div ref={menuRef} className="fixed right-4 top-4 z-50 flex items-start gap-2 md:right-6 md:top-6">
+    <div ref={menuRef} className="fixed right-3 top-3 z-50 flex items-center gap-2 md:right-6 md:top-5">
       {showBubble && (
         <button
           onClick={() => navigate('/app/estados')}
-          className="relative mt-1 max-w-[180px] rounded-[var(--radius-md)] bg-surface px-3 py-2 text-left shadow-[var(--shadow-loopy-md)] transition-transform hover:-translate-y-0.5 sm:max-w-[240px]"
+          className="glass flex max-w-[150px] items-center gap-2 rounded-full py-1.5 pl-1.5 pr-4 text-left shadow-[var(--shadow-loopy-md)] transition-transform hover:-translate-y-0.5 sm:max-w-[260px]"
         >
-          <span className="flex items-center gap-1.5 text-sm text-ink">
-            {mine?.emoji && <span>{mine.emoji}</span>}
-            <span className="truncate">
-              {bubbleText || DISPONIBILIDAD_LABEL[mine?.disponibilidad ?? ''] || 'Mi estado'}
-            </span>
+          <MoodIcon value={mine?.emoji} size={32} />
+          <span className="truncate text-[13px] font-semibold text-ink">
+            {bubbleText || DISPONIBILIDAD_LABEL[mine?.disponibilidad ?? ''] || 'Mi estado'}
           </span>
-          <span className="absolute -right-1.5 top-3 h-3 w-3 rotate-45 bg-surface" />
         </button>
       )}
 
       <div className="relative">
         <button
           onClick={() => setOpen((v) => !v)}
-          className="flex h-11 w-11 items-center justify-center rounded-full font-display text-lg font-semibold text-ink shadow-[var(--shadow-loopy-md)] ring-2 ring-white transition-transform hover:scale-105"
+          className="flex h-11 w-11 items-center justify-center rounded-full font-display text-lg font-semibold text-ink shadow-[var(--shadow-loopy-md)] ring-[3px] ring-white transition-transform hover:scale-105 active:scale-95"
           style={{ background: threadColor }}
           aria-label="Tu cuenta"
         >
@@ -96,36 +92,30 @@ export function UserStatusMenu() {
         </button>
 
         {open && (
-          <div className="absolute right-0 top-14 w-56 rounded-[var(--radius-lg)] bg-surface p-2 shadow-[var(--shadow-loopy-lg)]">
+          <div className="animate-pop absolute right-0 top-14 w-64 rounded-[28px] bg-white p-2 shadow-[var(--shadow-loopy-lg)]">
             <div className="px-3 py-2">
-              <p className="font-semibold text-ink">{profile?.apodo || 'Vos'}</p>
-              <p className="truncate text-xs text-ink-muted">{profile?.email}</p>
+              <p className="m-0 font-bold text-ink">{profile?.apodo || 'Vos'}</p>
+              <p className="m-0 truncate text-xs text-ink-muted">{profile?.email}</p>
             </div>
             <div className="my-1 h-px bg-line" />
             <button
-              onClick={() => {
-                setOpen(false)
-                navigate('/app/estados')
-              }}
-              className="flex w-full items-center gap-2 rounded-[var(--radius-sm)] px-3 py-2 text-left text-sm font-semibold text-ink-soft hover:bg-surface-soft"
+              onClick={() => { setOpen(false); navigate('/app/estados') }}
+              className="flex w-full items-center gap-3 rounded-full p-1.5 text-left text-sm font-bold text-ink-soft hover:bg-surface-soft"
             >
-              💭 Mi estado
+              <Icon name="estados" size={34} /> Mi estado
             </button>
             <button
-              onClick={() => {
-                setOpen(false)
-                navigate('/app/ajustes')
-              }}
-              className="flex w-full items-center gap-2 rounded-[var(--radius-sm)] px-3 py-2 text-left text-sm font-semibold text-ink-soft hover:bg-surface-soft"
+              onClick={() => { setOpen(false); navigate('/app/ajustes') }}
+              className="flex w-full items-center gap-3 rounded-full p-1.5 text-left text-sm font-bold text-ink-soft hover:bg-surface-soft"
             >
-              ⚙️ Ajustes
+              <Icon name="ajustes" size={34} /> Ajustes
             </button>
             <div className="my-1 h-px bg-line" />
             <button
               onClick={handleSignOut}
-              className="flex w-full items-center gap-2 rounded-[var(--radius-sm)] px-3 py-2 text-left text-sm font-semibold text-error hover:bg-surface-soft"
+              className="flex w-full items-center gap-3 rounded-full p-1.5 text-left text-sm font-bold text-error hover:bg-surface-soft"
             >
-              Cerrar sesión
+              <Icon name="logout" size={34} /> Cerrar sesión
             </button>
           </div>
         )}

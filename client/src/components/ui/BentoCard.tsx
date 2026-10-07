@@ -17,14 +17,10 @@ const gradientClass: Record<NonNullable<BentoCardProps['gradient']>, string> = {
 }
 
 export function BentoCard({ children, className = '', gradient = null, onClick }: BentoCardProps) {
-  const bg = gradient ? gradientClass[gradient] : 'bg-surface border border-line'
-
   return (
     <div
       onClick={onClick}
-      className={`rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-loopy-sm)] ${bg} ${
-        onClick ? 'cursor-pointer transition-transform hover:-translate-y-0.5' : ''
-      } ${className}`}
+      className={`card ${gradient ? gradientClass[gradient] : ''} ${onClick ? 'card-lift cursor-pointer' : ''} ${className}`}
     >
       {children}
     </div>

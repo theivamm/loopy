@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import { Button } from '../components/ui/Button'
-import { LoopyMascot } from '../components/LoopyMascot'
+import { AuthShell } from '../components/ui/AuthShell'
 
 type Step = 'checking' | 'needs-auth' | 'joining' | 'celebrating' | 'error'
 
@@ -45,54 +45,34 @@ export default function InviteAccept() {
     join()
   }, [authLoading, user, space, token, navigate, refresh])
 
+  if (step === 'needs-auth')
+    return (
+      <AuthShell title="Te invitaron a su Loopy" subtitle="Creá tu cuenta (o iniciá sesión) para entrar al espacio." expression="waiting">
+        <div className="flex flex-col gap-3">
+          <Button onClick={() => navigate('/signup')}>Crear cuenta</Button>
+          <Button variant="secondary" onClick={() => navigate('/login')}>Ya tengo cuenta</Button>
+        </div>
+      </AuthShell>
+    )
+
+  if (step === 'celebrating')
+    return (
+      <AuthShell title="¡Nació su Loopy!" subtitle="Bienvenidos a su espacio." expression="celebrating" mascotSize={132}>
+        <div />
+      </AuthShell>
+    )
+
+  if (step === 'error')
+    return (
+      <AuthShell title="Uy, se nos enredó el hilo" expression="waiting">
+        <p className="mt-0 text-center text-error">{error}</p>
+        <Button className="w-full" variant="secondary" onClick={() => navigate('/')}>Volver al inicio</Button>
+      </AuthShell>
+    )
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-grad-hero px-4 text-center">
-      <div className="w-full max-w-sm rounded-[var(--radius-xl)] bg-surface p-8 shadow-[var(--shadow-loopy-lg)]">
-        {step === 'needs-auth' && (
-          <>
-            <LoopyMascot size={88} expression="waiting" />
-            <h1 className="mt-4 font-display text-2xl font-semibold text-ink">
-              Te invitaron a su Loopy
-            </h1>
-            <p className="mt-2 text-ink-soft">Creá tu cuenta (o iniciá sesión) para entrar al espacio.</p>
-            <div className="mt-6 flex flex-col gap-3">
-              <Button variant="primary" onClick={() => navigate('/signup')}>
-                Crear cuenta
-              </Button>
-              <Button variant="secondary" onClick={() => navigate('/login')}>
-                Ya tengo cuenta
-              </Button>
-            </div>
-          </>
-        )}
-
-        {(step === 'checking' || step === 'joining') && (
-          <>
-            <LoopyMascot size={88} />
-            <p className="mt-4 text-ink-soft">Entrelazando los hilos…</p>
-          </>
-        )}
-
-        {step === 'celebrating' && (
-          <>
-            <LoopyMascot size={110} expression="celebrating" />
-            <h1 className="mt-4 font-display text-2xl font-semibold text-ink">
-              ¡Nació su Loopy! 🎉
-            </h1>
-            <p className="mt-2 text-ink-soft">Bienvenidos a su espacio.</p>
-          </>
-        )}
-
-        {step === 'error' && (
-          <>
-            <LoopyMascot size={88} expression="waiting" />
-            <p className="mt-4 text-error">{error}</p>
-            <Button className="mt-6" variant="secondary" onClick={() => navigate('/')}>
-              Volver al inicio
-            </Button>
-          </>
-        )}
-      </div>
-    </div>
+    <AuthShell title="Entrelazando los hilos…" expression="happy">
+      <div />
+    </AuthShell>
   )
 }

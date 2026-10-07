@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { Button } from '../components/ui/Button'
-import { LoopyMascot } from '../components/LoopyMascot'
+import { AuthShell } from '../components/ui/AuthShell'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -26,41 +26,19 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-grad-hero px-4">
-      <div className="w-full max-w-sm rounded-[var(--radius-xl)] bg-surface p-8 shadow-[var(--shadow-loopy-lg)]">
-        <div className="mb-6 flex justify-center">
-          <LoopyMascot size={72} />
-        </div>
-        <h1 className="text-center font-display text-2xl font-semibold text-ink">Bienvenidos de nuevo</h1>
-        <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit}>
-          <input
-            type="email"
-            required
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="h-12 rounded-[var(--radius-sm)] bg-surface-soft px-4 outline-none focus:ring-2 focus:ring-lavender"
-          />
-          <input
-            type="password"
-            required
-            placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="h-12 rounded-[var(--radius-sm)] bg-surface-soft px-4 outline-none focus:ring-2 focus:ring-lavender"
-          />
-          {error && <p className="text-sm text-error">{error}</p>}
-          <Button type="submit" variant="primary" disabled={loading}>
-            {loading ? 'Entrando…' : 'Iniciar sesión'}
-          </Button>
-        </form>
-        <p className="mt-4 text-center text-sm text-ink-soft">
-          ¿Todavía no tienen espacio?{' '}
-          <Link to="/signup" className="font-semibold text-plum">
-            Créenlo acá
-          </Link>
-        </p>
-      </div>
-    </div>
+    <AuthShell title="Bienvenidos de nuevo" subtitle="Su rincón los estaba esperando." expression="happy">
+      <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
+        <input type="email" required placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="field" />
+        <input type="password" required placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} className="field" />
+        {error && <p className="m-0 rounded-2xl bg-[#FFE6EA] px-4 py-2 text-sm text-error">{error}</p>}
+        <Button type="submit" disabled={loading} className="mt-1 w-full">
+          {loading ? 'Entrando…' : 'Iniciar sesión'}
+        </Button>
+      </form>
+      <p className="mb-0 mt-5 text-center text-sm text-ink-soft">
+        ¿Todavía no tienen espacio?{' '}
+        <Link to="/signup" className="font-bold text-plum no-underline hover:underline">Créenlo acá</Link>
+      </p>
+    </AuthShell>
   )
 }
