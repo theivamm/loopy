@@ -56,6 +56,11 @@ export default function Songs() {
     load()
   }
 
+  async function handleDelete(id: string) {
+    await supabase.from('songs').delete().eq('id', id)
+    load()
+  }
+
   const songOfTheDay = songs.find((s) => s.es_del_dia)
 
   return (
@@ -140,11 +145,20 @@ export default function Songs() {
               <p className="font-semibold text-ink">{song.titulo}</p>
               {song.artista && <p className="text-sm text-ink-soft">{song.artista}</p>}
             </div>
-            {!song.es_del_dia && (
-              <Button variant="secondary" onClick={() => markAsToday(song.id)}>
-                Hacer canción del día
-              </Button>
-            )}
+            <div className="flex items-center gap-2">
+              {!song.es_del_dia && (
+                <Button variant="secondary" onClick={() => markAsToday(song.id)}>
+                  Hacer canción del día
+                </Button>
+              )}
+              <button
+                onClick={() => handleDelete(song.id)}
+                className="px-2 text-sm font-semibold text-error"
+                aria-label="Eliminar canción"
+              >
+                Eliminar
+              </button>
+            </div>
           </div>
         ))}
       </div>

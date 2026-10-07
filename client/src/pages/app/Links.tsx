@@ -77,6 +77,11 @@ export default function Links() {
     load()
   }
 
+  async function handleDelete(id: string) {
+    await supabase.from('links').delete().eq('id', id)
+    load()
+  }
+
   return (
     <div className="mx-auto max-w-[800px] p-6 md:p-8">
       <div className="flex items-center justify-between">
@@ -145,12 +150,21 @@ export default function Links() {
               >
                 {link.titulo || link.url}
               </a>
-              <button
-                onClick={() => toggleHecho(link.id, link.hecho)}
-                className="mt-auto self-start text-sm font-semibold text-plum"
-              >
-                {link.hecho ? '✓ Hecho' : 'Marcar como hecho'}
-              </button>
+              <div className="mt-auto flex items-center justify-between">
+                <button
+                  onClick={() => toggleHecho(link.id, link.hecho)}
+                  className="text-sm font-semibold text-plum"
+                >
+                  {link.hecho ? '✓ Hecho' : 'Marcar como hecho'}
+                </button>
+                <button
+                  onClick={() => handleDelete(link.id)}
+                  className="text-sm font-semibold text-error"
+                  aria-label="Eliminar link"
+                >
+                  Eliminar
+                </button>
+              </div>
             </div>
           </div>
         ))}

@@ -17,6 +17,7 @@ export default function Events() {
   const [inicio, setInicio] = useState('')
   const [tipo, setTipo] = useState('general')
   const [open, setOpen] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   async function load() {
@@ -38,16 +39,49 @@ export default function Events() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!space || !user || !titulo.trim() || !inicio) return
-    await supabase.from('events').insert({
-      space_id: space.id,
-      creado_por: user.id,
-      titulo,
-      inicio: new Date(inicio).toISOString(),
-      tipo,
-    })
+
+    if (editingId) {
+      await supabase
+        .from('events')
+        .update({ titulo, inicio: new Date(inicio).toISOString(), tipo })
+        .eq('id', editingId)
+    } else {
+      await supabase.from('events').insert({
+        space_id: space.id,
+        creado_por: user.id,
+        titulo,
+        inicio: new Date(inicio).toISOString(),
+        tipo,
+      })
+    }
+    cancel()
+    load()
+  }
+
+  function toDatetimeLocal(iso: string) {
+    const d = new Date(iso)
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset())
+    return d.toISOString().slice(0, 16)
+  }
+
+  function startEdit(event: Event) {
+    setEditingId(event.id)
+    setTitulo(event.titulo)
+    setInicio(toDatetimeLocal(event.inicio))
+    setTipo(event.tipo ?? 'general')
+    setOpen(true)
+  }
+
+  function cancel() {
+    setOpen(false)
+    setEditingId(null)
     setTitulo('')
     setInicio('')
-    setOpen(false)
+    setTipo('general')
+  }
+
+  async function handleDelete(id: string) {
+    await supabase.from('events').delete().eq('id', id)
     load()
   }
 
@@ -57,7 +91,7 @@ export default function Events() {
     <div className="mx-auto max-w-[800px] p-6 md:p-8">
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl font-semibold text-ink">Calendario de eventos</h1>
-        <Button variant="primary" onClick={() => setOpen((v) => !v)}>
+        <Button variant="primary" onClick={() => (open ? cancel() : setOpen(true))}>
           {open ? 'Cancelar' : '+ Agregar'}
         </Button>
       </div>
@@ -109,7 +143,7 @@ export default function Events() {
             ))}
           </select>
           <Button type="submit" variant="primary">
-            Agendar
+            {editingId ? 'Guardar cambios' : 'Agendar'}
           </Button>
         </form>
       )}
@@ -138,6 +172,14 @@ export default function Events() {
                 {' · '}
                 {event.tipo}
               </p>
+            </div>
+            <div className="flex gap-3 text-xs font-semibold">
+              <button onClick={() => startEdit(event)} className="text-plum">
+                Editar
+              </button>
+              <button onClick={() => handleDelete(event.id)} className="text-error">
+                Eliminar
+              </button>
             </div>
           </div>
         ))}

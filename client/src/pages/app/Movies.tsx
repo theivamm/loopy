@@ -53,6 +53,11 @@ export default function Movies() {
     load()
   }
 
+  async function handleDelete(id: string) {
+    await supabase.from('movies').delete().eq('id', id)
+    load()
+  }
+
   function spin() {
     const pending = movies.filter((m) => m.estado === 'por_ver')
     if (pending.length === 0) return
@@ -129,17 +134,26 @@ export default function Movies() {
             className="flex items-center justify-between rounded-[var(--radius-md)] border border-line bg-surface p-4"
           >
             <p className="font-semibold text-ink">{movie.titulo}</p>
-            <select
-              value={movie.estado}
-              onChange={(e) => setEstado(movie.id, e.target.value as Movie['estado'])}
-              className="rounded-[var(--radius-sm)] bg-surface-soft px-3 py-2 text-sm font-semibold text-ink-soft outline-none"
-            >
-              {Object.entries(ESTADOS).map(([key, label]) => (
-                <option key={key} value={key}>
-                  {label}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center gap-2">
+              <select
+                value={movie.estado}
+                onChange={(e) => setEstado(movie.id, e.target.value as Movie['estado'])}
+                className="rounded-[var(--radius-sm)] bg-surface-soft px-3 py-2 text-sm font-semibold text-ink-soft outline-none"
+              >
+                {Object.entries(ESTADOS).map(([key, label]) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={() => handleDelete(movie.id)}
+                className="px-2 text-sm font-semibold text-error"
+                aria-label="Eliminar"
+              >
+                Eliminar
+              </button>
+            </div>
           </div>
         ))}
       </div>

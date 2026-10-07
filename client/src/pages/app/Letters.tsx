@@ -11,6 +11,7 @@ export default function Letters() {
   const [titulo, setTitulo] = useState('')
   const [contenido, setContenido] = useState('')
   const [open, setOpen] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   async function load() {
@@ -28,18 +29,47 @@ export default function Letters() {
     load()
   }, [space])
 
+  function startCreate() {
+    setEditingId(null)
+    setTitulo('')
+    setContenido('')
+    setOpen(true)
+  }
+
+  function startEdit(letter: Letter) {
+    setEditingId(letter.id)
+    setTitulo(letter.titulo)
+    setContenido(letter.contenido)
+    setOpen(true)
+  }
+
+  function cancel() {
+    setOpen(false)
+    setEditingId(null)
+    setTitulo('')
+    setContenido('')
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!space || !user || !titulo.trim() || !contenido.trim()) return
-    await supabase.from('letters').insert({
-      space_id: space.id,
-      autor_id: user.id,
-      titulo,
-      contenido,
-    })
-    setTitulo('')
-    setContenido('')
-    setOpen(false)
+
+    if (editingId) {
+      await supabase.from('letters').update({ titulo, contenido }).eq('id', editingId)
+    } else {
+      await supabase.from('letters').insert({
+        space_id: space.id,
+        autor_id: user.id,
+        titulo,
+        contenido,
+      })
+    }
+    cancel()
+    load()
+  }
+
+  async function handleDelete(id: string) {
+    await supabase.from('letters').delete().eq('id', id)
     load()
   }
 
@@ -47,7 +77,7 @@ export default function Letters() {
     <div className="mx-auto max-w-[800px] p-6 md:p-8">
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl font-semibold text-ink">Cartas</h1>
-        <Button variant="primary" onClick={() => setOpen((v) => !v)}>
+        <Button variant="primary" onClick={() => (open ? cancel() : startCreate())}>
           {open ? 'Cancelar' : '+ Escribir'}
         </Button>
       </div>
@@ -70,7 +100,7 @@ export default function Letters() {
             className="mt-3 w-full rounded-[var(--radius-sm)] bg-surface-soft p-4 font-hand text-xl outline-none focus:ring-2 focus:ring-lavender"
           />
           <Button type="submit" variant="primary" className="mt-3">
-            Enviar carta 💌
+            {editingId ? 'Guardar cambios' : 'Enviar carta 💌'}
           </Button>
         </form>
       )}
@@ -89,9 +119,19 @@ export default function Letters() {
           >
             <p className="font-display text-lg font-semibold text-ink">{letter.titulo}</p>
             <p className="mt-2 whitespace-pre-wrap font-hand text-xl text-ink-soft">{letter.contenido}</p>
-            <p className="mt-3 text-xs text-ink-muted">
-              {new Date(letter.creado_en).toLocaleDateString()}
-            </p>
+            <div className="mt-3 flex items-center justify-between">
+              <p className="text-xs text-ink-muted">{new Date(letter.creado_en).toLocaleDateString()}</p>
+              {letter.autor_id === user?.id && (
+                <div className="flex gap-3 text-xs font-semibold">
+                  <button onClick={() => startEdit(letter)} className="text-plum">
+                    Editar
+                  </button>
+                  <button onClick={() => handleDelete(letter.id)} className="text-error">
+                    Eliminar
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         ))}
       </div>

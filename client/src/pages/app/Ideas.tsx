@@ -53,6 +53,11 @@ export default function Ideas() {
     load()
   }
 
+  async function handleDelete(id: string) {
+    await supabase.from('ideas').delete().eq('id', id)
+    load()
+  }
+
   return (
     <div className="mx-auto max-w-[800px] p-6 md:p-8">
       <div className="flex items-center justify-between">
@@ -113,12 +118,21 @@ export default function Ideas() {
               </p>
               <p className="text-xs uppercase tracking-wide text-ink-muted">{idea.categoria}</p>
             </div>
-            <button
-              onClick={() => vote(idea)}
-              className="flex items-center gap-1 rounded-full bg-lilac-mist px-3 py-1.5 text-sm font-semibold text-plum"
-            >
-              ❤️ {idea.votos}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => vote(idea)}
+                className="flex items-center gap-1 rounded-full bg-lilac-mist px-3 py-1.5 text-sm font-semibold text-plum"
+              >
+                ❤️ {idea.votos}
+              </button>
+              <button
+                onClick={() => handleDelete(idea.id)}
+                className="px-2 text-sm font-semibold text-error"
+                aria-label="Eliminar idea"
+              >
+                Eliminar
+              </button>
+            </div>
           </div>
         ))}
       </div>
