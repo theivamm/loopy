@@ -7,6 +7,7 @@ import { useAuth } from '../../context/AuthContext'
 import { UserStatusMenu } from './UserStatusMenu'
 import { PartnerNotifier } from './PartnerNotifier'
 import { NotificationMenu } from './NotificationMenu'
+import { PartnerInviteBanner } from './PartnerInviteBanner'
 
 interface NavItem { to: string; label: string; icon: IconName; end?: boolean }
 
@@ -104,6 +105,7 @@ export function AppLayout() {
           <NotificationMenu />
         </header>
         <main className="min-w-0 flex-1 pb-28 pt-1 md:pb-10">
+          <PartnerInviteBanner />
           <Outlet />
         </main>
       </div>

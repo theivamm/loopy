@@ -6,9 +6,30 @@ import { Button } from '../components/ui/Button'
 import { AuthShell } from '../components/ui/AuthShell'
 import { Icon } from '../components/ui/Icon'
 import type { Invitation } from '../types/db'
+import { usePartner } from '../lib/usePartner'
+
+const pendingInvitations = new Map<string, Promise<Invitation>>()
+function getInvitation(spaceId: string) {
+  const pending = pendingInvitations.get(spaceId)
+  if (pending) return pending
+  const request = (async () => {
+    const { data: existing, error: queryError } = await supabase.from('invitations').select('*')
+      .eq('space_id', spaceId).eq('usado', false).gt('vence_en', new Date().toISOString())
+      .order('creado_en', { ascending: false }).limit(1).maybeSingle()
+    if (queryError) throw queryError
+    if (existing) return existing as Invitation
+    const { data, error } = await supabase.rpc('create_invitation', { p_space_id: spaceId })
+    if (error || !data) throw error ?? new Error('No se recibió la invitación')
+    return data as Invitation
+  })().finally(() => pendingInvitations.delete(spaceId))
+  pendingInvitations.set(spaceId, request)
+  return request
+}
 
 export default function InvitePage() {
   const { space, loading: authLoading } = useAuth()
+  const spaceId = space?.id
+  const { hasPartner, error: partnerError } = usePartner()
   const navigate = useNavigate()
   const [invitation, setInvitation] = useState<Invitation | null>(null)
   const [loading, setLoading] = useState(true)
@@ -16,47 +37,26 @@ export default function InvitePage() {
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    if (!authLoading && space) navigate('/app', { replace: true })
-  }, [authLoading, space, navigate])
+    if (!authLoading && hasPartner === true) navigate('/app', { replace: true })
+  }, [authLoading, hasPartner, navigate])
 
   useEffect(() => {
-    async function loadOrCreateInvitation() {
-      const { data: membership } = await supabase.from('memberships').select('space_id').maybeSingle()
-
-      if (!membership) {
-        setLoading(false)
-        return
-      }
-
-      const { data: existing } = await supabase
-        .from('invitations')
-        .select('*')
-        .eq('space_id', membership.space_id)
-        .eq('usado', false)
-        .order('creado_en', { ascending: false })
-        .maybeSingle()
-
-      if (existing) {
-        setInvitation(existing as Invitation)
-        setLoading(false)
-        return
-      }
-
-      const { data, error } = await supabase.rpc('create_invitation', { p_space_id: membership.space_id })
-      if (error) setError(error.message)
-      else setInvitation(data as Invitation)
-      setLoading(false)
-    }
-
-    loadOrCreateInvitation()
-  }, [])
+    if (authLoading || !spaceId || hasPartner !== false) return
+    let active = true
+    getInvitation(spaceId).then((data) => { if (active) { setInvitation(data); setError(null) } })
+      .catch(() => { if (active) setError('No se pudo preparar la invitación. Recargá la página para probar nuevamente.') })
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
+  }, [authLoading, spaceId, hasPartner])
 
   const inviteUrl = invitation ? `${window.location.origin}/invite/${invitation.token}` : ''
 
-  function copy() {
-    navigator.clipboard.writeText(inviteUrl)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(inviteUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch { setError('No se pudo copiar. Seleccioná el link y copialo manualmente.') }
   }
 
   return (
@@ -66,10 +66,11 @@ export default function InvitePage() {
       expression="waiting"
       mascotSize={116}
     >
-      {loading && <p className="text-center text-ink-muted">Preparando la invitación…</p>}
+      {loading && !partnerError && <p className="text-center text-ink-muted">Preparando la invitación…</p>}
+      {partnerError && <p role="alert" className="text-center text-sm text-error">No pudimos comprobar los integrantes del espacio. Recargá la página para intentar nuevamente.</p>}
       {error && <p className="text-center text-sm text-error">{error}</p>}
 
-      {invitation && (
+      {invitation && hasPartner === false && (
         <div className="flex flex-col gap-4">
           <div className="rounded-[28px] bg-gradient-to-br from-lilac-mist to-[#FFE9F1] p-4 text-center">
             <p className="eyebrow m-0">Código</p>
@@ -101,6 +102,7 @@ export default function InvitePage() {
           </p>
         </div>
       )}
+      <Button variant="secondary" className="mt-5 w-full" onClick={() => navigate('/app')}>Volver a mi espacio</Button>
     </AuthShell>
   )
 }
