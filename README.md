@@ -57,3 +57,48 @@ Toda la lógica Supabase, rutas, props y tipos se mantienen. No se tocan `App.ts
 
 - `index.html` debe tener `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">`.
 - El Dashboard ahora consulta también canción del día, próximo evento, cena de hoy, notitas y pelis pendientes (todo con tablas existentes).
+
+## App de Android (nuevo)
+
+`client/android/` es un proyecto de Capacitor que **no empaqueta el sitio** — abre un WebView apuntando en vivo a `https://loopy-pi.vercel.app` (configurado en `client/capacitor.config.ts`, campo `server.url`). Ventaja: cualquier cambio que subís a Vercel se ve en la app sin recompilar ni repasar por la Play Store. Desventaja: necesita internet siempre, no funciona offline.
+
+### Requisitos (en tu máquina, no en este sandbox)
+
+- [Android Studio](https://developer.android.com/studio) instalado (trae el Android SDK y Gradle).
+- Java no hace falta instalarlo aparte, Android Studio lo incluye.
+
+### Probarla
+
+```bash
+cd client
+npx cap open android
+```
+
+Eso abre el proyecto en Android Studio. Desde ahí: **Run ▶** con un emulador o el celular conectado por USB (con "Depuración USB" activada).
+
+### Si cambiás `capacitor.config.ts` (por ejemplo la URL del servidor)
+
+```bash
+cd client
+npx cap sync android
+```
+
+### Ícono y splash
+
+Están generados a partir de `client/resources/` (`icon.png`, `icon-foreground.png`, `icon-background.png`, `splash.png` — el mascota Loopy). Si querés regenerarlos después de cambiar alguno de esos archivos:
+
+```bash
+cd client
+npx capacitor-assets generate --android
+```
+
+(Instalá `@capacitor/assets` como dev dependency primero: `npm i -D @capacitor/assets`. Se puede desinstalar después de generar, no hace falta en runtime.)
+
+### Para publicarla en la Play Store
+
+Hace falta:
+1. Cuenta de Google Play Developer (pago único de USD 25).
+2. Generar un **keystore** de firma (`keytool -genkeypair ...` o desde Android Studio: Build → Generate Signed Bundle/APK) y guardarlo en un lugar seguro — **nunca lo subas al repo**, si lo perdés no podés actualizar la app nunca más con ese mismo `appId`.
+3. Build → Generate Signed Bundle (`.aab`) desde Android Studio y subirlo a la consola de Play.
+
+Como la app apunta a la URL en vivo, una vez publicada no hace falta volver a subir una versión nueva por cada cambio de UI — solo si cambiás algo nativo (ícono, nombre, permisos, plugins de Capacitor).
