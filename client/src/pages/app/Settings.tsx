@@ -80,8 +80,9 @@ export default function Settings() {
 
   async function test() {
     setBusy(true)
-    const ok = await sendTestPush()
-    setMsg(ok ? 'Te mandamos una notificación de prueba.' : 'No se pudo enviar la prueba. Revisá que el servidor tenga las claves VAPID.')
+    setMsg(null)
+    const result = await sendTestPush()
+    setMsg(result.message)
     setBusy(false)
   }
 
@@ -137,7 +138,7 @@ export default function Settings() {
           {perm === 'unsupported' && <p className="m-0 rounded-[22px] bg-[#FFF3D6] px-5 py-3 text-sm font-semibold text-ink">Este navegador no soporta push.</p>}
           {perm === 'denied' && <p className="m-0 rounded-[22px] bg-[#FFE6EA] px-5 py-3 text-sm font-semibold text-ink">Bloqueaste las notificaciones en el navegador. Activalas desde el candado de la barra de direcciones.</p>}
           {needsInstall && <p className="m-0 rounded-[22px] bg-[#EAF4FF] px-5 py-3 text-sm font-semibold text-ink">En iPhone primero tocá Compartir → “Agregar a pantalla de inicio” y abrí Loopy desde ahí.</p>}
-          {msg && <p className="m-0 rounded-[22px] bg-lilac-mist px-5 py-3 text-sm font-semibold text-plum">{msg}</p>}
+          {msg && <p role="status" className="m-0 rounded-[22px] bg-lilac-mist px-5 py-3 text-sm font-semibold text-plum">{msg}</p>}
 
           <ul className={`m-0 flex list-none flex-col gap-2 p-0 transition-opacity ${enabled ? '' : 'pointer-events-none opacity-50'}`}>
             {PREFS.map((p) => (

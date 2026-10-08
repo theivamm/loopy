@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { requireAuth } from '../middleware/requireAuth.js'
 import { supabaseAdmin } from '../lib/supabaseAdmin.js'
-import { nameOf, partnerOf, pushEnabled, sendToUser } from '../lib/push.js'
+import { deliverToUser, nameOf, partnerOf, pushEnabled, sendToUser } from '../lib/push.js'
 
 export const pushRouter = Router()
 pushRouter.use(requireAuth)
@@ -15,9 +15,12 @@ const REACTIONS: Record<string, string> = {
 }
 
 pushRouter.post('/test', async (req, res) => {
-  if (!pushEnabled) return res.status(503).json({ error: 'Push no configurado' })
-  const sent = await sendToUser(req.userId!, { title: 'Loopy', body: '¡Las notificaciones funcionan!', url: '/app/ajustes', tag: 'test' })
-  res.status(sent ? 200 : 404).json({ ok: sent > 0, sent })
+  try {
+    const result = await deliverToUser(req.userId!, { title: 'Loopy', body: '¡Las notificaciones funcionan!', url: '/app/ajustes', tag: 'test' })
+    return res.status(result.status).json({ ok: result.sent > 0, sent: result.sent, error: result.error })
+  } catch {
+    return res.status(500).json({ error: 'El servidor tuvo un error al enviar la prueba. Probá nuevamente.' })
+  }
 })
 
 // El cliente avisa "creé X"; el servidor lee la fila, verifica que sea tuya y notifica SOLO a tu pareja.
