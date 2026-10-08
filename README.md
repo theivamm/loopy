@@ -32,6 +32,10 @@ Ejecutá, en orden, `supabase/migrations/0005_questions_and_moods.sql` y `0006_e
 
 Ejecutá `supabase/migrations/0008_notes_v2.sql` (después del 0007). Reiniciá el servidor (nuevo aviso push de notitas).
 
+## Historial de notificaciones
+
+Ejecutá `supabase/migrations/0009_notifications.sql` en Supabase → SQL Editor, después de 0008, y desplegá el cliente. La campanita junto al estado muestra el contador de avisos sin leer y el historial paginado. Abrir un aviso lo marca como leído; también se pueden marcar todos. Los avisos nuevos de estados, toques, reacciones, cartas y notitas se guardan mediante triggers aunque la app esté cerrada y sin depender de push o VAPID. Cada usuario solo puede consultar sus propios avisos y actualizar su fecha de lectura. Los eventos anteriores a la migración no se importan.
+
 ## Qué cambia
 
 - **Íconos**: sin emojis de sistema. Librería Phosphor (duotone) dentro de "tiles" pastel de color — `components/ui/Icon.tsx`.
