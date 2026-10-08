@@ -120,7 +120,7 @@ export default function Songs() {
         </FormCard>
       )}
 
-      <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-2 2xl:grid-cols-3">
         {!loading && songs.length === 0 && <EmptyState text="Todavía no hay canciones. ¿Agregamos la primera?" />}
         {songs.map((song) => (
           <div key={song.id} className="card card-lift flex items-center gap-3 !p-3 md:!p-4">

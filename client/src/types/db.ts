@@ -52,6 +52,11 @@ export interface Status {
   actividad: string | null
   disponibilidad: 'libre' | 'ocupado' | 'no_molestar' | null
   mensaje: string | null
+  energia: number | null
+  ubicacion: string | null
+  actividad_tipo: string | null
+  vence_en: string | null
+  zona_horaria: string | null
   actualizado_en: string
 }
 
@@ -66,6 +71,8 @@ export interface Letter {
   abrir_en: string | null
   condicion: string | null
   leida: boolean
+  decoraciones: import('../lib/letterStyle').Deco[]
+  notificada: boolean
   creado_en: string
 }
 
@@ -77,7 +84,21 @@ export interface Note {
   color: string
   posicion: number
   rotacion: number
+  x: number | null
+  y: number | null
+  z: number
+  tipo: 'nota' | 'lista'
+  items: NoteItem[]
+  pin: string
+  fijada: boolean
+  me_gusta: string[]
   creado_en: string
+}
+
+export interface NoteItem {
+  id: string
+  t: string
+  done: boolean
 }
 
 export interface Song {
@@ -186,4 +207,30 @@ export interface QuestionAnswer {
   fecha: string
   respuesta: string
   creado_en: string
+}
+
+export interface Touch {
+  id: string
+  space_id: string
+  user_id: string
+  mensaje: string | null
+  creado_en: string
+}
+
+export interface Reaction {
+  id: string
+  space_id: string
+  user_id: string
+  tipo: 'abrazo' | 'animo' | 'cafe' | 'corazon'
+  creado_en: string
+}
+
+export interface NotificationPrefs {
+  user_id: string
+  toques: boolean
+  reacciones: boolean
+  estados: boolean
+  cartas: boolean
+  eventos: boolean
+  notitas: boolean
 }

@@ -68,7 +68,7 @@ export function UserStatusMenu() {
   const showBubble = Boolean(mine && (bubbleText || mine.emoji))
 
   return (
-    <div ref={menuRef} className="fixed right-3 top-3 z-50 flex items-center gap-2 md:right-6 md:top-5">
+    <div ref={menuRef} className="relative z-50 flex items-center gap-2">
       {showBubble && (
         <button
           onClick={() => navigate('/app/estados')}

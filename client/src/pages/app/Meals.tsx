@@ -90,7 +90,7 @@ export default function Meals() {
   }
 
   return (
-    <Page max={1100}>
+    <Page>
       <PageHeader icon="comidas" title="Comidas" subtitle={`Semana del ${weekStart.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}`} />
 
       {/* Desktop */}

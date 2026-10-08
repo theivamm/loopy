@@ -6,6 +6,7 @@ import { LoopyMascot } from '../../components/LoopyMascot'
 import { Button } from '../../components/ui/Button'
 import { Icon, MoodIcon, type IconName } from '../../components/ui/Icon'
 import { Chip } from '../../components/ui/PageShell'
+import { notifyPartner } from '../../lib/push'
 import { WeekMoods } from '../../components/home/WeekMoods'
 import { DailyQuestion } from '../../components/home/DailyQuestion'
 import type { Event, Letter, Note, Song, Status } from '../../types/db'
@@ -90,6 +91,8 @@ export default function Dashboard() {
       { space_id: space.id, user_id: user.id, mensaje: 'Pensando en vos', actualizado_en: new Date().toISOString() },
       { onConflict: 'space_id,user_id' },
     )
+    const { data: touch } = await supabase.from('thinking_touches').insert({ space_id: space.id, user_id: user.id, mensaje: 'Pensando en vos' }).select('id').single()
+    if (touch) notifyPartner('touch', touch.id)
     setSending(false)
     setSent(true)
     setTimeout(() => setSent(false), 2400)
@@ -104,17 +107,17 @@ export default function Dashboard() {
   const today = new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
 
   return (
-    <div className="mx-auto max-w-[1180px] px-4 pb-8 md:px-8">
-      <header className="mb-5">
+    <div className="mx-auto max-w-[1560px] px-4 pb-8 md:px-6">
+      <header className="mb-6 px-1">
         <p className="eyebrow m-0 capitalize text-ink-muted">{today}</p>
         <h1 className="m-0 mt-1 text-[28px] leading-tight text-ink md:text-4xl">
           {greeting()}{profile?.apodo ? `, ${profile.apodo}` : ''}
         </h1>
       </header>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-5">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-6 md:gap-6 xl:grid-cols-12">
         {/* HERO */}
-        <section className="relative col-span-2 flex flex-col-reverse items-center justify-between gap-4 overflow-hidden rounded-[40px] bg-grad-loop p-6 shadow-[0_20px_50px_rgba(124,92,219,.18),inset_0_3px_0_rgba(255,255,255,.7)] sm:flex-row sm:items-center md:p-8 md:min-h-[300px]">
+        <section className="relative col-span-2 md:col-span-4 xl:col-span-8 flex flex-col-reverse items-center justify-between gap-4 overflow-hidden rounded-[40px] bg-grad-loop p-6 shadow-[0_20px_50px_rgba(124,92,219,.18),inset_0_3px_0_rgba(255,255,255,.7)] sm:flex-row sm:items-center md:p-10 md:min-h-[340px]">
           <div className="pointer-events-none absolute -right-10 -top-16 h-64 w-64 rounded-full bg-white/40 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-16 -left-8 h-52 w-52 rounded-full bg-blush/60 blur-3xl" />
           <div className="relative flex w-full flex-1 flex-col gap-3 sm:w-auto">
@@ -152,7 +155,7 @@ export default function Dashboard() {
         </section>
 
         {/* Días juntos */}
-        <section className="card flex flex-col items-center justify-center gap-2 text-center">
+        <section className="card col-span-2 flex flex-col items-center justify-center gap-2 text-center md:col-span-2 xl:col-span-4">
           <span className="eyebrow">Juntos hace</span>
           <div className="relative h-[116px] w-[116px] md:h-[132px] md:w-[132px]">
             <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
@@ -179,11 +182,11 @@ export default function Dashboard() {
           )}
         </section>
 
-        <WeekMoods />
         <DailyQuestion />
+        <WeekMoods />
 
         {/* Canción */}
-        <Link to="/app/musica" className="col-span-1 block no-underline">
+        <Link to="/app/musica" className="col-span-1 block no-underline md:col-span-3 xl:col-span-4">
           <div className="card card-lift flex h-full flex-col gap-3 bg-gradient-to-br from-[#E4D9FF] to-[#FFE0EA]">
             <Eyebrow icon="musica">Canción del día</Eyebrow>
             {song ? (
@@ -206,7 +209,7 @@ export default function Dashboard() {
         </Link>
 
         {/* Próximo plan */}
-        <Link to="/app/calendario" className="col-span-1 block no-underline md:col-span-2">
+        <Link to="/app/calendario" className="col-span-1 block no-underline md:col-span-3 xl:col-span-4">
           <div className="card card-lift flex h-full flex-col gap-3 bg-[#EAF4FF]">
             <Eyebrow icon="calendario">Próximo plan</Eyebrow>
             {nextEvent ? (
@@ -229,7 +232,7 @@ export default function Dashboard() {
         </Link>
 
         {/* Cena */}
-        <Link to="/app/comidas" className="col-span-1 block no-underline">
+        <Link to="/app/comidas" className="col-span-1 block no-underline md:col-span-2 xl:col-span-4">
           <div className="card card-lift flex h-full flex-col gap-3 bg-[#E8F8F0]">
             <Eyebrow icon="comidas">Hoy cenamos</Eyebrow>
             <p className={`m-0 ${dinner ? 'font-display text-xl font-semibold leading-tight text-ink' : 'text-sm text-ink-soft'}`}>
@@ -239,7 +242,7 @@ export default function Dashboard() {
         </Link>
 
         {/* Pelis */}
-        <Link to="/app/pelis" className="col-span-1 block no-underline">
+        <Link to="/app/pelis" className="col-span-1 block no-underline md:col-span-2 xl:col-span-3">
           <div className="card card-lift flex h-full flex-col gap-3 bg-[#EAF4FF]">
             <Eyebrow icon="pelis">¿Qué vemos?</Eyebrow>
             <p className="m-0 text-sm text-ink-soft">
@@ -252,7 +255,7 @@ export default function Dashboard() {
         </Link>
 
         {/* Carta */}
-        <Link to="/app/cartas" className="col-span-1 block no-underline">
+        <Link to="/app/cartas" className="col-span-1 block no-underline md:col-span-2 xl:col-span-3">
           <div className="card card-lift flex h-full flex-col gap-3 bg-[#FFEEF4]">
             <Eyebrow icon="cartas">Última carta</Eyebrow>
             <p className="m-0 line-clamp-2 font-hand text-2xl leading-none text-ink">
@@ -262,7 +265,7 @@ export default function Dashboard() {
         </Link>
 
         {/* Notitas */}
-        <Link to="/app/notitas" className="col-span-2 block no-underline">
+        <Link to="/app/notitas" className="col-span-2 block no-underline md:col-span-6 xl:col-span-6">
           <div className="card card-lift flex h-full flex-col gap-3 bg-[#FFF8E1]">
             <Eyebrow icon="notitas">La heladera</Eyebrow>
             {notes.length ? (

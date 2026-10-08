@@ -5,7 +5,10 @@ import {
   ArrowRight, Cake, Airplane, Gift, Star, Coffee, CookingPot, MapPin, ShoppingBag,
   Smiley, VideoCamera, Rocket, Confetti, Moon, Leaf, Thermometer, SmileyNervous,
   SmileyAngry, Copy, WhatsappLogo, Clock, Popcorn, Shield, UsersThree, Question,
-  Cloud, Sun, Crown, ShootingStar, ChatsCircle,
+  Cloud, Sun, Crown, ShootingStar, ChatsCircle, CaretLeft, CaretRight,
+  TextB, TextItalic, TextUnderline, TextStrikethrough, TextHTwo, ListBullets, ListNumbers,
+  TextAlignLeft, TextAlignCenter, TextAlignRight, Quotes, Eraser, Highlighter, TextAa, UploadSimple,
+  ImageSquare, EnvelopeSimpleOpen, BellRinging, Briefcase, GraduationCap, Barbell, Car, Buildings, HandHeart, Lightning, Bed, Television, Headphones,
   type Icon as PhosphorIcon,
 } from '@phosphor-icons/react'
 
@@ -37,7 +40,15 @@ const REG = {
   whatsapp: [WhatsappLogo, 'mint'], clock: [Clock, 'sky'], popcorn: [Popcorn, 'butter'],
   shield: [Shield, 'mint'], users: [UsersThree, 'lavender'], question: [Question, 'lavender'],
   cloud: [Cloud, 'sky'], sun: [Sun, 'butter'], crown: [Crown, 'butter'], shooting: [ShootingStar, 'lavender'],
-  chats: [ChatsCircle, 'lavender'],
+  chats: [ChatsCircle, 'lavender'], caretLeft: [CaretLeft, 'lavender'], caretRight: [CaretRight, 'lavender'],
+  work: [Briefcase, 'sky'], study: [GraduationCap, 'lavender'], gym: [Barbell, 'peach'], car: [Car, 'sky'],
+  office: [Buildings, 'lavender'], hug: [HandHeart, 'blush'], bolt: [Lightning, 'butter'], bed: [Bed, 'lavender'],
+  bold: [TextB, 'lavender'], italic: [TextItalic, 'lavender'], underline: [TextUnderline, 'lavender'], strike: [TextStrikethrough, 'lavender'],
+  h2: [TextHTwo, 'lavender'], ul: [ListBullets, 'lavender'], ol: [ListNumbers, 'lavender'], alignL: [TextAlignLeft, 'lavender'],
+  alignC: [TextAlignCenter, 'lavender'], alignR: [TextAlignRight, 'lavender'], quote: [Quotes, 'lavender'], eraser: [Eraser, 'lavender'],
+  highlighter: [Highlighter, 'butter'], size: [TextAa, 'lavender'], upload: [UploadSimple, 'sky'], image: [ImageSquare, 'sky'],
+  envelopeOpen: [EnvelopeSimpleOpen, 'blush'], bell: [BellRinging, 'butter'],
+  tv: [Television, 'sky'], headphones: [Headphones, 'blush'],
 } as const satisfies Record<string, readonly [PhosphorIcon, Tone]>
 
 export type IconName = keyof typeof REG

@@ -77,7 +77,7 @@ export default function Ideas() {
         </FormCard>
       )}
 
-      <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-2 2xl:grid-cols-3">
         {!loading && ideas.length === 0 && <EmptyState text="Todavía no hay ideas. ¿Tiramos la primera?" />}
         {ideas.map((idea) => (
           <div key={idea.id} className="card card-lift flex items-center gap-3 !p-4">

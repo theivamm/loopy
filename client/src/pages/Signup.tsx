@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { Button } from '../components/ui/Button'
-import { AuthShell } from '../components/ui/AuthShell'
+import { AuthShell, IconField } from '../components/ui/AuthShell'
 
 export default function Signup() {
   const navigate = useNavigate()
@@ -49,8 +49,8 @@ export default function Signup() {
   return (
     <AuthShell title="Creemos su espacio" subtitle="Dos vidas, un mismo lazo." expression="celebrating">
       <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
-        <input type="email" required placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="field" />
-        <input type="password" required minLength={6} placeholder="Contraseña (mín. 6 caracteres)" value={password} onChange={(e) => setPassword(e.target.value)} className="field" />
+        <IconField icon="cartas" type="email" required autoComplete="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <IconField icon="lock" type="password" required minLength={6} autoComplete="new-password" placeholder="Contraseña (mín. 6 caracteres)" value={password} onChange={(e) => setPassword(e.target.value)} />
         {error && <p className="m-0 rounded-2xl bg-[#FFE6EA] px-4 py-2 text-sm text-error">{error}</p>}
         <Button type="submit" disabled={loading} className="mt-1 w-full">
           {loading ? 'Creando…' : 'Crear cuenta'}

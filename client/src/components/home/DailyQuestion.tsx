@@ -63,7 +63,7 @@ export function DailyQuestion() {
   if (!question) return null
 
   return (
-    <section className="card col-span-2 flex flex-col gap-3">
+    <section className="card col-span-2 flex flex-col gap-4 md:col-span-6 xl:col-span-7">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5">
           <Icon name="chats" size={32} />

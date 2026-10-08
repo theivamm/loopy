@@ -1,10 +1,11 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { Icon, type IconName, type Tone } from './Icon'
 import { LoopyMascot } from '../LoopyMascot'
 
-export function Page({ children, max = 800 }: { children: ReactNode; max?: number }) {
+export function Page({ children, max = 1480 }: { children: ReactNode; max?: number }) {
   return (
-    <div className="mx-auto w-full px-4 pb-8 pt-2 md:px-8 md:pt-4" style={{ maxWidth: max + 64 }}>
+    <div className="mx-auto w-full px-4 pb-8 pt-2 md:px-6 md:pt-4" style={{ maxWidth: max + 64 }}>
       {children}
     </div>
   )
@@ -13,17 +14,30 @@ export function Page({ children, max = 800 }: { children: ReactNode; max?: numbe
 export function PageHeader({
   icon, title, subtitle, action,
 }: { icon: IconName; title: string; subtitle?: string; action?: ReactNode }) {
-  return (
-    <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-      <div className="flex min-w-0 items-center gap-3 md:gap-4">
-        <Icon name={icon} size={52} />
-        <div className="min-w-0">
-          <h1 className="m-0 text-[26px] leading-tight text-ink md:text-[32px]">{title}</h1>
-          {subtitle && <p className="m-0 mt-0.5 text-sm text-ink-soft">{subtitle}</p>}
-        </div>
+  const [slots, setSlots] = useState<{ t: HTMLElement | null; a: HTMLElement | null }>({ t: null, a: null })
+  useEffect(() => {
+    setSlots({ t: document.getElementById('topbar-slot'), a: document.getElementById('topbar-actions') })
+  }, [])
+
+  const block = (
+    <div className="flex min-w-0 items-center gap-3">
+      <Icon name={icon} size={46} />
+      <div className="min-w-0">
+        <h1 className="m-0 truncate text-[24px] leading-tight text-ink md:text-[28px]">{title}</h1>
+        {subtitle && <p className="m-0 truncate text-[13px] text-ink-soft">{subtitle}</p>}
       </div>
-      {action}
     </div>
+  )
+
+  return (
+    <>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 md:hidden">
+        {block}
+        {action}
+      </div>
+      {slots.t && createPortal(block, slots.t)}
+      {slots.a && action && createPortal(action, slots.a)}
+    </>
   )
 }
 
@@ -79,7 +93,7 @@ export function Chip({
 
 export function FormCard({ children, onSubmit }: { children: ReactNode; onSubmit: (e: React.FormEvent) => void }) {
   return (
-    <form onSubmit={onSubmit} className="card animate-pop mb-6 flex flex-col gap-3">
+    <form onSubmit={onSubmit} className="card animate-pop mb-6 flex max-w-3xl flex-col gap-3">
       {children}
     </form>
   )

@@ -11,7 +11,7 @@ function localISO(d: Date) {
   return x.toISOString().slice(0, 10)
 }
 
-export function WeekMoods() {
+export function WeekMoods({ className }: { className?: string } = {}) {
   const { space, user, profile } = useAuth()
   const [logs, setLogs] = useState<MoodLog[]>([])
 
@@ -45,7 +45,7 @@ export function WeekMoods() {
   const myColor = THREAD_COLORS[profile?.color_hilo ?? ''] ?? DEFAULT_THREAD_COLOR
 
   return (
-    <section className="card col-span-2 bg-[#F3EEFF]">
+    <section className={`card bg-[#F3EEFF] ${className ?? 'col-span-2 md:col-span-6 xl:col-span-5'}`}>
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5">
           <Icon name="estados" size={32} />

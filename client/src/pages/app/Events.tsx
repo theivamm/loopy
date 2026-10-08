@@ -111,7 +111,7 @@ export default function Events() {
         </div>
       )}
 
-      <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-2 2xl:grid-cols-3">
         {!loading && events.length === 0 && <EmptyState text="Nada agendado todavía. ¿Planeamos algo?" />}
         {events.map((event) => {
           const d = new Date(event.inicio)

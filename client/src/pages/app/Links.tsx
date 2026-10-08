@@ -67,7 +67,7 @@ export default function Links() {
   const shown = filter ? links.filter((l) => l.categoria === filter) : links
 
   return (
-    <Page max={900}>
+    <Page>
       <PageHeader
         icon="links" title="Links" subtitle="Lugares, recetas y cosas para no perder."
         action={
@@ -108,7 +108,7 @@ export default function Links() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 md:gap-5">
         {!loading && shown.length === 0 && <EmptyState text="Todavía no hay links guardados." />}
         {shown.map((link) => (
           <div key={link.id} className={`card card-lift flex flex-col overflow-hidden !p-0 ${link.hecho ? 'opacity-60' : ''}`}>
