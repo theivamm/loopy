@@ -9,6 +9,7 @@ import Signup from './pages/Signup'
 import Onboarding from './pages/Onboarding'
 import InvitePage from './pages/InvitePage'
 import InviteAccept from './pages/InviteAccept'
+import AuthConfirm from './pages/AuthConfirm'
 
 import Dashboard from './pages/app/Dashboard'
 import Estados from './pages/app/Estados'
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/auth/confirm" element={<AuthConfirm />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/invite/:token" element={<InviteAccept />} />
 

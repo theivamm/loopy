@@ -16,7 +16,13 @@ export default function Signup() {
     e.preventDefault()
     setError(null)
     setLoading(true)
-    const { data, error } = await supabase.auth.signUp({ email, password })
+    const pendingInvite = sessionStorage.getItem('loopy_pending_invite')
+    const confirmationUrl = new URL('/auth/confirm', window.location.origin)
+    if (pendingInvite) confirmationUrl.searchParams.set('invite', pendingInvite)
+    const { data, error } = await supabase.auth.signUp({
+      email, password,
+      options: { emailRedirectTo: confirmationUrl.toString() },
+    })
     setLoading(false)
     if (error) {
       setError('Uy, se nos enredó el hilo. Probá de nuevo.')
@@ -28,7 +34,6 @@ export default function Signup() {
       return
     }
 
-    const pendingInvite = sessionStorage.getItem('loopy_pending_invite')
     navigate(pendingInvite ? `/invite/${pendingInvite}` : '/onboarding')
   }
 
@@ -37,7 +42,7 @@ export default function Signup() {
       <AuthShell title="Revisá tu email" expression="waiting">
         <p className="mt-0 text-center text-ink-soft">
           Te mandamos un link a <strong className="text-ink">{email}</strong> para confirmar tu cuenta. Una vez
-          confirmada, iniciá sesión para seguir.
+          confirmada, te llevaremos a Loopy para seguir.
         </p>
         <Link to="/login" className="no-underline">
           <Button className="mt-4 w-full">Ir a iniciar sesión</Button>
