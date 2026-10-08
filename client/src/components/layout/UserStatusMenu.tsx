@@ -68,11 +68,11 @@ export function UserStatusMenu() {
   const showBubble = Boolean(mine && (bubbleText || mine.emoji))
 
   return (
-    <div ref={menuRef} className="relative z-50 flex min-w-0 items-center gap-2">
+    <div ref={menuRef} className="relative z-50 flex items-center gap-2">
       {showBubble && (
         <button
           onClick={() => navigate('/app/estados')}
-          className="glass flex min-w-0 max-w-[150px] items-center gap-2 rounded-full py-1.5 pl-1.5 pr-4 text-left shadow-[var(--shadow-loopy-md)] transition-transform hover:-translate-y-0.5 sm:max-w-[260px]"
+          className="glass flex max-w-[150px] items-center gap-2 rounded-full py-1.5 pl-1.5 pr-4 text-left shadow-[var(--shadow-loopy-md)] transition-transform hover:-translate-y-0.5 sm:max-w-[260px]"
         >
           <MoodIcon value={mine?.emoji} size={32} />
           <span className="truncate text-[13px] font-semibold text-ink">
@@ -81,7 +81,7 @@ export function UserStatusMenu() {
         </button>
       )}
 
-      <div className="relative shrink-0">
+      <div className="relative">
         <button
           onClick={() => setOpen((v) => !v)}
           className="flex h-11 w-11 items-center justify-center rounded-full font-display text-lg font-semibold text-ink shadow-[var(--shadow-loopy-md)] ring-[3px] ring-white transition-transform hover:scale-105 active:scale-95"

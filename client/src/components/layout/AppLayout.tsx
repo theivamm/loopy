@@ -6,8 +6,6 @@ import { Blobs } from '../ui/Blobs'
 import { useAuth } from '../../context/AuthContext'
 import { UserStatusMenu } from './UserStatusMenu'
 import { PartnerNotifier } from './PartnerNotifier'
-import { NotificationMenu } from './NotificationMenu'
-import { PartnerInviteBanner } from './PartnerInviteBanner'
 
 interface NavItem { to: string; label: string; icon: IconName; end?: boolean }
 
@@ -102,10 +100,8 @@ export function AppLayout() {
           <div className="flex-1 md:hidden" />
           <div id="topbar-actions" className="hidden items-center gap-2 md:flex" />
           <UserStatusMenu />
-          <NotificationMenu />
         </header>
         <main className="min-w-0 flex-1 pb-28 pt-1 md:pb-10">
-          <PartnerInviteBanner />
           <Outlet />
         </main>
       </div>

@@ -274,3 +274,5 @@
 .letter-content mark { border-radius: 6px; padding: 0 3px; }
 .letter-content[contenteditable]:empty::before { content: attr(data-placeholder); color: rgba(107,95,126,.5); pointer-events: none; }
 @keyframes loopy-flap { from { transform: rotateX(0); } to { transform: rotateX(180deg); } }
+
+@keyframes loopy-vinyl { to { transform: rotate(360deg); } }

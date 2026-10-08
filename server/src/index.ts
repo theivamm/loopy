@@ -5,7 +5,6 @@ import { healthRouter } from './routes/health.js'
 import { linkPreviewRouter } from './routes/linkPreview.js'
 import { songPreviewRouter } from './routes/songPreview.js'
 import { pushRouter } from './routes/push.js'
-import { accountRouter } from './routes/account.js'
 import { startLetterScheduler } from './lib/push.js'
 
 const app = express()
@@ -20,7 +19,6 @@ app.use('/api/health', healthRouter)
 app.use('/api/link-preview', linkPreviewRouter)
 app.use('/api/song-preview', songPreviewRouter)
 app.use('/api/push', pushRouter)
-app.use('/api/account', accountRouter)
 
 app.listen(port, () => {
   console.log(`Loopy API listening on http://localhost:${port}`)

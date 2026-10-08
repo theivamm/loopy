@@ -1,23 +1,113 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Confirmá tu cuenta de Loopy</title></head>
-<body style="margin:0;padding:0;background-color:#FAF7F2;font-family:Arial,Helvetica,sans-serif;color:#302440;">
-  <div style="display:none;max-height:0;overflow:hidden;">Confirmá tu email para continuar en Loopy.</div>
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#FAF7F2;">
-    <tr><td align="center" style="padding:40px 16px;">
-      <table role="presentation" width="480" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:480px;">
-        <tr><td align="center" style="padding:0 0 24px;font-size:38px;font-weight:bold;letter-spacing:-2px;color:#7C5CDB;">loopy<span style="color:#E992B5;">.</span></td></tr>
-        <tr><td style="background-color:#FFFFFF;border:1px solid #EAE2F3;border-radius:28px;padding:36px 28px;">
-          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
-            <tr><td align="center" style="padding-bottom:22px;"><span style="display:inline-block;background-color:#F1EAFF;border-radius:24px;padding:12px 20px;font-size:14px;font-weight:bold;color:#7C5CDB;">Un paso más para entrar</span></td></tr>
-            <tr><td align="center"><h1 style="margin:0 0 16px;font-size:28px;line-height:1.25;color:#302440;">Confirmá tu email</h1><p style="margin:0 0 28px;font-size:16px;line-height:1.6;color:#766781;">Tocá el botón para confirmar tu cuenta y continuar en Loopy.</p></td></tr>
-            <tr><td align="center" style="padding-bottom:28px;"><table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr><td align="center" bgcolor="#7C5CDB" style="border-radius:28px;"><a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:17px 32px;font-size:16px;font-weight:bold;color:#FFFFFF;text-decoration:none;border-radius:28px;">Confirmar mi cuenta</a></td></tr></table></td></tr>
-            <tr><td style="border-top:1px solid #F0EAF5;padding-top:22px;"><p style="margin:0;font-size:12px;line-height:1.7;color:#8A7A96;text-align:center;">Si no creaste esta cuenta, podés ignorar este correo.<br>Este enlace es personal y solo puede utilizarse una vez.</p></td></tr>
-          </table>
-        </td></tr>
-        <tr><td align="center" style="padding:22px 16px;font-size:12px;line-height:1.6;color:#8A7A96;">Loopy · Confirmación de cuenta</td></tr>
-      </table>
-    </td></tr>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Confirmá tu cuenta en Loopy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body style="margin:0;padding:0;background-color:#FFF9F4;">
+  <!-- Preheader (texto de vista previa) -->
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#FFF9F4;">Un toque y su rincón queda listo.</div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#FFF9F4;background-image:linear-gradient(160deg,#FFF9F4 0%,#F3EEFF 50%,#FFEEF4 100%);">
+    <tr>
+      <td align="center" style="padding:40px 16px;">
+
+        <!-- Logo -->
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px;">
+          <tr>
+            <td style="font-family:'Fraunces',Georgia,'Times New Roman',serif;font-size:28px;font-weight:600;color:#2E2440;letter-spacing:-0.3px;">loopy</td>
+          </tr>
+        </table>
+
+        <!-- Tarjeta -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;background-color:#FFFFFF;border-radius:40px;box-shadow:0 20px 50px rgba(124,92,219,0.18);">
+          <tr>
+            <td align="center" style="padding:44px 36px 8px 36px;">
+
+              <!-- Mascota hecha con CSS (sin imágenes externas) -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" width="112" height="104" style="width:112px;height:104px;background-color:#C9B8FF;background-image:linear-gradient(135deg,#B9A4FF,#FFB69A);border-radius:52px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td width="12" height="18" style="width:12px;height:18px;background-color:#2E2440;border-radius:9px;font-size:0;line-height:0;">&nbsp;</td>
+                        <td width="30" style="width:30px;font-size:0;line-height:0;">&nbsp;</td>
+                        <td width="12" height="18" style="width:12px;height:18px;background-color:#2E2440;border-radius:9px;font-size:0;line-height:0;">&nbsp;</td>
+                      </tr>
+                    </table>
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:8px;">
+                      <tr>
+                        <td width="14" height="8" style="width:14px;height:8px;background-color:#FF9FBF;border-radius:6px;font-size:0;line-height:0;">&nbsp;</td>
+                        <td width="22" height="8" style="width:22px;height:8px;border-bottom:3px solid #C7603F;border-radius:0 0 12px 12px;font-size:0;line-height:0;">&nbsp;</td>
+                        <td width="14" height="8" style="width:14px;height:8px;background-color:#FF9FBF;border-radius:6px;font-size:0;line-height:0;">&nbsp;</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <h1 style="margin:24px 0 8px 0;font-family:'Fraunces',Georgia,'Times New Roman',serif;font-size:30px;line-height:1.15;font-weight:600;color:#2E2440;">¡Casi listo!</h1>
+              <p style="margin:0;font-family:'Plus Jakarta Sans',Arial,Helvetica,sans-serif;font-size:16px;line-height:1.55;color:#6B5F7E;">
+                Confirmá tu email para crear su rincón. Dos vidas, un mismo lazo.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Botón -->
+          <tr>
+            <td align="center" style="padding:28px 36px 12px 36px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" bgcolor="#7C5CDB" style="border-radius:999px;box-shadow:0 10px 26px rgba(124,92,219,0.36);">
+                    <a href="{{ .ConfirmationURL }}" target="_blank" style="display:inline-block;padding:16px 38px;font-family:'Plus Jakarta Sans',Arial,Helvetica,sans-serif;font-size:16px;font-weight:800;color:#FFFFFF;text-decoration:none;border-radius:999px;">Confirmar mi cuenta</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Link alternativo -->
+          <tr>
+            <td style="padding:12px 36px 0 36px;">
+              <p style="margin:0;font-family:'Plus Jakarta Sans',Arial,Helvetica,sans-serif;font-size:13px;line-height:1.55;color:#A89DB5;text-align:center;">
+                ¿El botón no funciona? Copiá y pegá este link en tu navegador:<br>
+                <a href="{{ .ConfirmationURL }}" target="_blank" style="color:#7C5CDB;word-break:break-all;">{{ .ConfirmationURL }}</a>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Qué viene -->
+          <tr>
+            <td style="padding:28px 36px 40px 36px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F6F0FF;border-radius:28px;">
+                <tr>
+                  <td style="padding:20px 24px;font-family:'Plus Jakarta Sans',Arial,Helvetica,sans-serif;font-size:14px;line-height:1.7;color:#2E2440;">
+                    <b style="color:#7C5CDB;">Después de confirmar:</b><br>
+                    1 · Elegí tu color de hilo<br>
+                    2 · Ponele nombre a su espacio<br>
+                    3 · Invitá a tu pareja con un link
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Pie -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;">
+          <tr>
+            <td align="center" style="padding:24px 16px 0 16px;font-family:'Plus Jakarta Sans',Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:#A89DB5;">
+              Si no creaste una cuenta en Loopy, ignorá este mensaje: no pasa nada.<br>
+              loopy · two lives, one loop
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
   </table>
 </body>
 </html>

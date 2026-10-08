@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { requireAuth } from '../middleware/requireAuth.js'
 import { supabaseAdmin } from '../lib/supabaseAdmin.js'
-import { deliverToUser, nameOf, partnerOf, pushEnabled, sendToUser } from '../lib/push.js'
+import { nameOf, partnerOf, pushEnabled, sendToUser } from '../lib/push.js'
 
 export const pushRouter = Router()
 pushRouter.use(requireAuth)
@@ -15,12 +15,9 @@ const REACTIONS: Record<string, string> = {
 }
 
 pushRouter.post('/test', async (req, res) => {
-  try {
-    const result = await deliverToUser(req.userId!, { title: 'Loopy', body: '¡Las notificaciones funcionan!', url: '/app/ajustes', tag: 'test' })
-    return res.status(result.status).json({ ok: result.sent > 0, sent: result.sent, error: result.error })
-  } catch {
-    return res.status(500).json({ error: 'El servidor tuvo un error al enviar la prueba. Probá nuevamente.' })
-  }
+  if (!pushEnabled) return res.status(503).json({ error: 'Push no configurado' })
+  const sent = await sendToUser(req.userId!, { title: 'Loopy', body: '¡Las notificaciones funcionan!', url: '/app/ajustes', tag: 'test' })
+  res.status(sent ? 200 : 404).json({ ok: sent > 0, sent })
 })
 
 // El cliente avisa "creé X"; el servidor lee la fila, verifica que sea tuya y notifica SOLO a tu pareja.
@@ -77,6 +74,21 @@ pushRouter.post('/notify', async (req, res) => {
       const from = await nameOf(me)
       const body = String(n.texto ?? '').slice(0, 90)
       await sendToUser(to, { title: n.tipo === 'lista' ? `${from} armó una lista` : `${from} dejó una notita`, body, url: '/app/notitas', tag: `note-${n.id}` }, 'notitas')
+      return res.json({ ok: true })
+    }
+
+    if (type === 'song') {
+      const { data: s } = await supabaseAdmin.from('songs').select('*').eq('id', id).maybeSingle()
+      if (!s) return res.status(404).json({ error: 'No existe' })
+      const { data: member } = await supabaseAdmin.from('memberships').select('user_id').eq('space_id', s.space_id).eq('user_id', me).maybeSingle()
+      if (!member) return res.status(403).json({ error: 'No permitido' })
+      const to = await partnerOf(s.space_id, me)
+      if (!to) return res.json({ ok: false, reason: 'no-partner' })
+      const from = await nameOf(me)
+      const today = new Date().toISOString().slice(0, 10)
+      const isToday = s.del_dia_fecha === today
+      const title = isToday ? `${from} eligió la canción de hoy` : `${from} te dedicó una canción`
+      await sendToUser(to, { title, body: `${s.titulo}${s.artista ? ' · ' + s.artista : ''}`, url: '/app/musica', tag: `song-${s.id}` }, 'toques')
       return res.json({ ok: true })
     }
 

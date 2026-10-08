@@ -3,7 +3,7 @@ import { supabase } from './supabaseClient'
 const API_URL = import.meta.env.VITE_API_URL as string
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined
 
-export type NotifyType = 'touch' | 'reaction' | 'status' | 'letter' | 'note'
+export type NotifyType = 'touch' | 'reaction' | 'status' | 'letter' | 'note' | 'song'
 
 export const pushSupported = () =>
   typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window
@@ -74,15 +74,9 @@ export async function notifyPartner(type: NotifyType, id: string) {
   try { await authedPost('/api/push/notify', { type, id }) } catch { /* best-effort */ }
 }
 
-export async function sendTestPush(): Promise<{ ok: boolean; message: string }> {
-  if (!API_URL) return { ok: false, message: 'No está configurada la dirección del servidor de notificaciones. Contactá al administrador.' }
+export async function sendTestPush(): Promise<boolean> {
   try {
     const r = await authedPost('/api/push/test', {})
-    if (!r) return { ok: false, message: 'Tu sesión no está disponible. Volvé a iniciar sesión.' }
-    const body = await r.json().catch(() => null)
-    if (r.ok && body?.ok === true) return { ok: true, message: 'Te mandamos una notificación de prueba.' }
-    if (r.status === 401) return { ok: false, message: 'Tu sesión es inválida o venció. Volvé a iniciar sesión.' }
-    if (typeof body?.error === 'string') return { ok: false, message: body.error }
-    return { ok: false, message: `El servidor no devolvió una respuesta válida (HTTP ${r.status}). Contactá al administrador.` }
-  } catch { return { ok: false, message: 'No se pudo conectar con el servidor de notificaciones. Revisá tu conexión; si continúa, contactá al administrador para revisar la URL del backend y CORS.' } }
+    return Boolean(r?.ok)
+  } catch { return false }
 }
