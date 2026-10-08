@@ -11,7 +11,10 @@ moviesRouter.get('/search', async (req, res) => {
   if (!key) return res.status(503).json({ error: 'TMDB no configurado' })
   if (q.length < 2) return res.json([])
   try {
-    const r = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${key}&language=es-ES&include_adult=false&query=${encodeURIComponent(q)}`)
+    const r = await fetch(
+      `https://api.themoviedb.org/3/search/multi?language=es-ES&include_adult=false&query=${encodeURIComponent(q)}`,
+      { headers: { Authorization: `Bearer ${key}`, accept: 'application/json' } },
+    )
     const j = (await r.json()) as { results?: Record<string, any>[] }
     const out = (j.results ?? [])
       .filter((m) => m.media_type === 'movie' || m.media_type === 'tv')
