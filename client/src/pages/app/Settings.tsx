@@ -16,7 +16,7 @@ const PREFS: { key: PrefKey; label: string; desc: string; icon: IconName }[] = [
   { key: 'estados', label: 'Cambios de estado', desc: 'Cuando tu pareja cambia de ánimo.', icon: 'estados' },
   { key: 'cartas', label: 'Cartas', desc: 'Nuevas y las que se desbloquean.', icon: 'cartas' },
   { key: 'notitas', label: 'Notitas', desc: 'Cuando tu pareja pega una en la heladera.', icon: 'notitas' },
-  { key: 'eventos', label: 'Eventos', desc: 'Recordatorios de planes (próximamente).', icon: 'calendario' },
+  { key: 'eventos', label: 'Eventos', desc: 'Recordatorio un día antes y una hora antes.', icon: 'calendario' },
 ]
 const DEFAULT_PREFS: Omit<NotificationPrefs, 'user_id'> = { toques: true, reacciones: true, estados: true, cartas: true, notitas: true, eventos: true }
 

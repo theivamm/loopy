@@ -130,6 +130,12 @@ export interface Movie {
   estado: 'por_ver' | 'viendo' | 'vista'
   rating_a: number | null
   rating_b: number | null
+  tipo: 'peli' | 'serie'
+  anio: number | null
+  sinopsis: string | null
+  plataforma: string | null
+  ratings: Record<string, number>
+  vista_fecha: string | null
   creado_en: string
 }
 
@@ -142,6 +148,8 @@ export interface Link {
   imagen: string | null
   categoria: string | null
   hecho: boolean
+  nota: string | null
+  favorito: boolean
   creado_en: string
 }
 
@@ -155,6 +163,7 @@ export interface Event {
   tipo: string | null
   recurrencia: string | null
   recordatorio: boolean
+  recordado: number
   creado_en: string
 }
 
@@ -186,6 +195,19 @@ export interface Idea {
   categoria: string | null
   privada: boolean
   votos: number
+  estado: 'sonada' | 'planeada' | 'hecha'
+  fecha_objetivo: string | null
+  costo: 'bajo' | 'medio' | 'alto' | null
+  votos_por: string[]
+  creado_en: string
+}
+
+export interface ShoppingItem {
+  id: string
+  space_id: string
+  texto: string
+  hecho: boolean
+  agregado_por: string | null
   creado_en: string
 }
 

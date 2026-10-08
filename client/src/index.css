@@ -276,3 +276,13 @@
 @keyframes loopy-flap { from { transform: rotateX(0); } to { transform: rotateX(180deg); } }
 
 @keyframes loopy-vinyl { to { transform: rotate(360deg); } }
+
+/* Íconos sueltos dentro de botones oscuros: blancos */
+button[data-variant='primary'] .icon-bare,
+button[data-variant='primary'] .icon-bare *,
+button[data-variant='secondary']:hover .icon-bare,
+button[data-variant='secondary']:hover .icon-bare *,
+button[data-variant='danger']:hover .icon-bare,
+button[data-variant='danger']:hover .icon-bare * { fill: #fff !important; }
+
+.icon-white, .icon-white * { fill: #fff !important; }

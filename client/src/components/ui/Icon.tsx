@@ -65,7 +65,7 @@ interface IconProps {
 export function Icon({ name, size = 44, tone, bare = false, className = '' }: IconProps) {
   const [Cmp, defTone] = REG[name]
   const t = TONES[tone ?? defTone]
-  if (bare) return <Cmp size={size} weight="duotone" color={t.fg} className={className} aria-hidden />
+  if (bare) return <Cmp size={size} weight="duotone" color={t.fg} className={`icon-bare ${className}`} aria-hidden />
   return (
     <span
       aria-hidden
