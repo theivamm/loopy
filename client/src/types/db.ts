@@ -63,7 +63,7 @@ export interface Status {
 export interface Letter {
   id: string
   space_id: string
-  autor_id: string
+  autor_id: string | null
   titulo: string
   contenido: string
   estilo: string | null
@@ -79,7 +79,7 @@ export interface Letter {
 export interface Note {
   id: string
   space_id: string
-  autor_id: string
+  autor_id: string | null
   texto: string
   color: string
   posicion: number
@@ -104,7 +104,7 @@ export interface NoteItem {
 export interface Song {
   id: string
   space_id: string
-  agregado_por: string
+  agregado_por: string | null
   titulo: string
   artista: string | null
   url: string | null
@@ -118,7 +118,7 @@ export interface Song {
 export interface Movie {
   id: string
   space_id: string
-  agregado_por: string
+  agregado_por: string | null
   tmdb_id: number | null
   titulo: string
   poster: string | null
@@ -131,7 +131,7 @@ export interface Movie {
 export interface Link {
   id: string
   space_id: string
-  agregado_por: string
+  agregado_por: string | null
   url: string
   titulo: string | null
   imagen: string | null
@@ -143,7 +143,7 @@ export interface Link {
 export interface Event {
   id: string
   space_id: string
-  creado_por: string
+  creado_por: string | null
   titulo: string
   inicio: string
   fin: string | null
@@ -175,7 +175,7 @@ export interface Meal {
 export interface Idea {
   id: string
   space_id: string
-  autor_id: string
+  autor_id: string | null
   titulo: string
   descripcion: string | null
   categoria: string | null

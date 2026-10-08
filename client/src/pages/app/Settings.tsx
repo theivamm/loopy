@@ -8,6 +8,7 @@ import { Chip, Page, PageHeader } from '../../components/ui/PageShell'
 import { THREAD_COLORS, DEFAULT_THREAD_COLOR } from '../../lib/threadColors'
 import { currentSubscription, disablePush, enablePush, isIOS, isStandalone, pushSupported, sendTestPush } from '../../lib/push'
 import type { NotificationPrefs } from '../../types/db'
+import { DeleteAccount } from '../../components/layout/DeleteAccount'
 
 type PrefKey = 'toques' | 'reacciones' | 'estados' | 'cartas' | 'notitas' | 'eventos'
 const PREFS: { key: PrefKey; label: string; desc: string; icon: IconName }[] = [
@@ -123,6 +124,7 @@ export default function Settings() {
           <Button variant="danger" className="w-full sm:w-auto sm:self-start" onClick={handleSignOut}>
             <Icon name="logout" bare size={20} /> Cerrar sesión
           </Button>
+          <DeleteAccount />
         </div>
 
         <section className="card flex flex-col gap-5">
