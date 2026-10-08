@@ -52,6 +52,7 @@ function AddModal({ onClose, onAdded }: { onClose: () => void; onAdded: () => vo
   const [q, setQ] = useState('')
   const [res, setRes] = useState<Found[]>([])
   const [noKey, setNoKey] = useState(false)
+  const [searchError, setSearchError] = useState(false)
   const [busy, setBusy] = useState(false)
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
@@ -60,12 +61,15 @@ function AddModal({ onClose, onAdded }: { onClose: () => void; onAdded: () => vo
     if (q.trim().length < 2) { setRes([]); return }
     timer.current = setTimeout(async () => {
       setBusy(true)
+      setNoKey(false)
+      setSearchError(false)
       const { data: { session } } = await supabase.auth.getSession()
       try {
         const r = await fetch(`${API_URL}/api/movies/search?q=${encodeURIComponent(q)}`, { headers: { Authorization: `Bearer ${session?.access_token}` } })
         if (r.status === 503) setNoKey(true)
-        else if (r.ok) { setNoKey(false); setRes(await r.json()) }
-      } catch { setNoKey(true) }
+        else if (r.ok) setRes(await r.json())
+        else setSearchError(true)
+      } catch { setSearchError(true) }
       setBusy(false)
     }, 350)
   }, [q])
@@ -83,6 +87,7 @@ function AddModal({ onClose, onAdded }: { onClose: () => void; onAdded: () => vo
     <Modal title="Agregar a la lista" onClose={onClose} max={720}>
       <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscá una peli o serie…" className="field" />
       {noKey && <p className="m-0 rounded-[22px] bg-[#FFF3D6] px-5 py-3 text-sm font-semibold text-ink">Sin buscador (falta TMDB_API_KEY en el servidor). Podés agregarla con el título.</p>}
+      {searchError && <p className="m-0 rounded-[22px] bg-[#FFE6EA] px-5 py-3 text-sm font-semibold text-error">No pudimos conectar con el buscador. Revisá que el servidor esté corriendo, o agregala con el título.</p>}
       {busy && <p className="m-0 text-center text-sm text-ink-muted">Buscando…</p>}
       {res.length > 0 && (
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
