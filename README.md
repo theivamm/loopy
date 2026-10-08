@@ -36,6 +36,10 @@ Ejecutá `supabase/migrations/0008_notes_v2.sql` (después del 0007). Reiniciá 
 
 Ejecutá `supabase/migrations/0009_music_v2.sql` (después del 0008) y reiniciá el servidor.
 
+## Pelis, Links, Calendario, Comidas e Ideas 2.0 (nuevo)
+
+Ejecutá `supabase/migrations/0010_planear_v2.sql` (después del 0009). Para el buscador de pelis poné `TMDB_API_KEY` en `server/.env` (gratis en themoviedb.org). Reiniciá el servidor.
+
 ## Qué cambia
 
 - **Íconos**: sin emojis de sistema. Librería Phosphor (duotone) dentro de "tiles" pastel de color — `components/ui/Icon.tsx`.

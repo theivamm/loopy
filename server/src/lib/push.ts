@@ -68,6 +68,22 @@ export function startLetterScheduler() {
       await supabaseAdmin.from('letters').update({ notificada: true }).eq('id', l.id)
     }
   }
-  setInterval(() => tick().catch((e) => console.error('[push] scheduler', e)), 60_000)
+  const reminders = async () => {
+    const now = Date.now()
+    const { data: evs } = await supabaseAdmin
+      .from('events').select('id,space_id,titulo,inicio,recordado')
+      .eq('recordatorio', true).lt('recordado', 2)
+      .gte('inicio', new Date(now).toISOString()).lte('inicio', new Date(now + 24 * 3600_000).toISOString()).limit(100)
+    for (const e of evs ?? []) {
+      const ms = new Date(e.inicio).getTime() - now
+      const stage = ms <= 3600_000 ? 2 : 1
+      if (e.recordado >= stage) continue
+      const { data: members } = await supabaseAdmin.from('memberships').select('user_id').eq('space_id', e.space_id)
+      const when = stage === 2 ? 'en 1 hora' : 'mañana'
+      for (const m of members ?? []) await sendToUser(m.user_id, { title: `${e.titulo} es ${when}`, url: '/app/calendario', tag: `event-${e.id}-${stage}` }, 'eventos')
+      await supabaseAdmin.from('events').update({ recordado: stage }).eq('id', e.id)
+    }
+  }
+  setInterval(() => { tick().catch((e) => console.error('[push] scheduler', e)); reminders().catch((e) => console.error('[push] reminders', e)) }, 60_000)
   tick().catch(() => undefined)
 }
