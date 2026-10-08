@@ -1,97 +1,51 @@
-# Loopy
+# Rediseño Loopy — pastel esponjoso
 
-Two lives, one loop. El rincón privado y compartido para parejas: estados, cartas, música, pelis, notitas, calendario y más.
+Reemplaza los archivos del cliente desde la raíz del repo.
 
-Ver [`loopy.md`](./loopy.md) para el documento de producto y diseño completo.
-
-## Stack
-
-- **Client:** React + Vite + TypeScript + Tailwind CSS v4 + React Router
-- **Server:** Node.js + Express + TypeScript
-- **DB/Auth:** Supabase (Postgres + Auth + RLS)
-
-## Estructura
-
-```
-loopy/
-├── client/      # app React (landing, auth, dashboard bento)
-├── server/      # API Node/Express (link previews, futuras integraciones)
-└── supabase/
-    └── migrations/
-        ├── 0001_tables.sql     # todas las tablas
-        ├── 0002_functions.sql  # triggers + RPCs (create_space, create_invitation, accept_invitation)
-        └── 0003_policies.sql   # RLS, al final para poder referenciar cualquier tabla/función
-```
-
-## 1. Base de datos (Supabase)
-
-La migración todavía **no fue aplicada** (el sandbox de este asistente bloquea comandos de deploy contra producción). Aplicala en 3 pasos, en orden, cada uno como una query nueva:
-
-1. Entrá a **Database → SQL Editor → New query** en tu [proyecto Supabase](https://supabase.com/dashboard/project/cnorswwbdzkfuwkutytc/sql/new) (no uses el asistente de IA del dashboard, puede alterar el SQL al pegarlo).
-2. Pegá y ejecutá [`0001_tables.sql`](./supabase/migrations/0001_tables.sql).
-3. En una query nueva, pegá y ejecutá [`0002_functions.sql`](./supabase/migrations/0002_functions.sql).
-4. En otra query nueva, pegá y ejecutá [`0003_policies.sql`](./supabase/migrations/0003_policies.sql).
-
-Si algo falla, revisá en qué paso fue: cada archivo es independiente, así que podés arreglar y re-ejecutar solo ese paso sin tocar los anteriores.
-
-Esto crea:
-- `profiles`, `couple_spaces`, `memberships`, `invitations`
-- tablas de contenido: `statuses`, `letters`, `songs`, `movies`, `links`, `events`, `recipes`, `meals`, `ideas`, `notes`, `memories`
-- Row Level Security en todo, restringido por `space_id`/membership
-- funciones RPC: `create_space`, `create_invitation`, `accept_invitation`
-
-## 2. Client
+## Instalar
 
 ```bash
+# desde la raíz de loopy/
+cp -R loopy-redesign/client/. client/
 cd client
-npm install
+npm install        # instala @phosphor-icons/react (ya agregado al package.json)
 npm run dev
 ```
 
-Variables de entorno (`client/.env`, ya configurado con las keys que diste):
+(Si preferís no pisar `package.json`: `npm i @phosphor-icons/react`.)
 
-```
-VITE_SUPABASE_URL=...
-VITE_SUPABASE_ANON_KEY=...   # clave pública/anon, segura para el browser
-VITE_API_URL=http://localhost:4000
-```
+## Base de datos (nuevo)
 
-## 3. Server
+Ejecutá, en orden, `supabase/migrations/0005_questions_and_moods.sql` y `0006_estados_v2.sql` en Supabase > SQL Editor > New query. Crea `mood_logs`, `questions` (30 preguntas), `question_answers`, las funciones `has_answered` y `partner_answered`, RLS y realtime. Copiá también ese archivo a `supabase/migrations/` del repo.
 
-```bash
-cd server
-npm install
-npm run dev
-```
+## Cartas 2.0 + Push (nuevo)
 
-Variables de entorno (`server/.env`, ya configurado):
+1. SQL: ejecutá `0007_letters_v2_and_push.sql` (crea el bucket `letter-assets`, columnas de cartas, `push_subscriptions`, `notification_prefs`).
+2. Claves VAPID: `npx web-push generate-vapid-keys`.
+   - `server/.env`: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (y `CLIENT_ORIGIN` con tu puerto, ej. `http://localhost:5174`).
+   - `client/.env`: `VITE_VAPID_PUBLIC_KEY` = la pública.
+3. `cd server && npm install` (agrega `web-push`) y reiniciá. `cd client && npm install` si falta algo.
+4. Entrá a Ajustes → Notificaciones → activar en cada dispositivo.
+   - El push requiere HTTPS en producción (localhost sirve para probar). En iPhone hay que agregar la app a la pantalla de inicio.
 
-```
-SUPABASE_URL=...
-SUPABASE_SERVICE_ROLE_KEY=...   # clave secreta — solo en el server, nunca en el client
-TMDB_API_KEY=                    # completar cuando se integre el módulo de pelis
-```
+## Notitas 2.0 (nuevo)
 
-## Estado actual (MVP)
+Ejecutá `supabase/migrations/0008_notes_v2.sql` (después del 0007). Reiniciá el servidor (nuevo aviso push de notitas).
 
-Implementado y funcional contra Supabase:
-- Registro / login (email + password)
-- Onboarding: apodo, color de hilo, nombre del espacio, aniversario
-- Invitación de pareja (link + código de 6 dígitos, vence en 7 días) y animación de "nace Loopy"
-- Dashboard en bento con estado de la pareja, "Pensando en vos", contador de días juntos
-- Estados: emoji, disponibilidad, actividad y mensaje, con el estado de tu pareja en vivo
-- Cartas (crear y ver)
-- Notitas (crear, ver, sacar)
-- Música: playlist compartida + "canción del día"
-- Pelis y series: lista por ver/viendo/vista + ruleta "¿Qué vemos hoy?"
-- Links: guardar con preview automático (vía el endpoint del server) + categorías + marcar como hecho
-- Calendario de eventos: agendar y ver el próximo evento con cuenta regresiva
-- Calendario de comidas: grilla semanal (desayuno/almuerzo/cena), crea la receta al vuelo por nombre
-- Ideas: agregar, votar, marcar como privada
+## Qué cambia
 
-Pendiente (Fase 3+ del roadmap): línea de tiempo/recuerdos, pregunta del día, cápsula del tiempo, Loopy que crece, integración real con TMDB/Spotify.
+- **Íconos**: sin emojis de sistema. Librería Phosphor (duotone) dentro de "tiles" pastel de color — `components/ui/Icon.tsx`.
+- **Estados de ánimo**: ahora `statuses.emoji` guarda una clave (`feliz`, `enamorado`…). Los emojis viejos que ya estén en la base se siguen mostrando como texto, sin migración.
+- **Sistema**: `index.css` (tokens, `.card`, `.field`, `.glass`, animaciones), `Button`, `BentoCard`, `PageShell` (Page/PageHeader/EmptyState/IconBtn/Chip/FormCard), `AuthShell`, `Blobs`.
+- **Mascota** `LoopyMascot`: lana esponjosa, brillo, parpadeo, 6 expresiones. Misma API.
+- **Móvil**: dock flotante inferior con 4 accesos + "Más" (hoja con el resto), logo superior, comidas en tarjetas por día, formularios y botones táctiles de 44px+.
+- **Vistas**: Landing, Login, Signup, Onboarding, Invite (x2), Dashboard, Estados, Cartas, Notitas, Música, Pelis, Links, Calendario, Comidas, Ideas, Ajustes.
 
-## Seguridad
+## Sin cambios
 
-- `SUPABASE_SERVICE_ROLE_KEY` vive solo en `server/.env` (gitignored). Nunca debe llegar al client ni al repo.
-- Todo el acceso a datos desde el client pasa por Supabase Auth + RLS (`is_space_member`), no por el server.
+Toda la lógica Supabase, rutas, props y tipos se mantienen. No se tocan `App.tsx`, `AuthContext`, `supabaseClient`, `threadColors` ni `types/db.ts`.
+
+## Notas
+
+- `index.html` debe tener `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">`.
+- El Dashboard ahora consulta también canción del día, próximo evento, cena de hoy, notitas y pelis pendientes (todo con tablas existentes).
