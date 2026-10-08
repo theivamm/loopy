@@ -12,7 +12,7 @@ import {
   ACTIVIDADES, UBICACIONES, REACCIONES, FRASES, VENCIMIENTOS, venceDesde, myTimezone,
   localTime, cityOf, energyLabel, energyColor, timeAgo, themeFor, effective, type Theme,
 } from '../../lib/statusMeta'
-import type { Reaction, Status, Touch } from '../../types/db'
+import type { Invitation, Reaction, Status, Touch } from '../../types/db'
 
 type Disp = NonNullable<Status['disponibilidad']>
 const DISPONIBILIDAD: { key: Disp; label: string; dot: string }[] = [
@@ -64,6 +64,7 @@ interface ViewProps {
   energia?: number | null
   empty?: ReactNode
   footer?: ReactNode
+  locked?: boolean
 }
 
 /** Tarjeta "escenario": Loopy a la izquierda, datos a la derecha. */
@@ -112,7 +113,7 @@ function StatusView(v: ViewProps) {
           {v.energia !== null && v.energia !== undefined && <div className="relative"><Battery value={v.energia} /></div>}
         </>
       )}
-      {v.footer && <div className="relative mt-auto">{v.footer}</div>}
+      {v.footer && <div className={`relative mt-auto ${v.locked ? 'pointer-events-none opacity-50 grayscale' : ''}`}>{v.footer}</div>}
     </section>
   )
 }
@@ -131,6 +132,54 @@ const pill = (on: boolean) =>
     on ? 'bg-lilac-mist text-plum shadow-[var(--shadow-loopy-md)]' : 'bg-surface-soft text-ink-soft hover:bg-white'
   }`
 
+const GRAY: Theme = { expr: 'waiting', a: '#CFC9D8', b: '#E6E2EB', card: 'linear-gradient(135deg,#EEECF1,#E1DEE7)', aura: '#CFC9D8' }
+
+/** Tarjeta de "tu pareja todavía no llegó": link de invitación a mano. */
+function InvitePartner() {
+  const { space } = useAuth()
+  const [inv, setInv] = useState<Invitation | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    if (!space) return
+    ;(async () => {
+      const { data: existing } = await supabase.from('invitations').select('*').eq('space_id', space.id).eq('usado', false)
+        .gt('vence_en', new Date().toISOString()).order('creado_en', { ascending: false }).limit(1).maybeSingle()
+      if (existing) return setInv(existing as Invitation)
+      const { data } = await supabase.rpc('create_invitation', { p_space_id: space.id })
+      if (data) setInv(data as Invitation)
+    })()
+  }, [space])
+
+  const url = inv ? `${window.location.origin}/invite/${inv.token}` : ''
+  function copy() {
+    navigator.clipboard.writeText(url)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className="relative flex flex-col items-center gap-5 py-4 text-center">
+      <div className="grayscale"><InteractiveLoopy size={130} expression="waiting" colorA={GRAY.a} colorB={GRAY.b} /></div>
+      <div>
+        <h3 className="m-0 font-display text-[26px] leading-tight text-ink/80">Tu pareja aún no llegó</h3>
+        <p className="m-0 mt-2 max-w-sm text-ink-soft">Mandale la invitación y empiecen a compartir cómo están, ahora mismo.</p>
+      </div>
+      <div className="flex flex-wrap justify-center gap-3">
+        <Button onClick={copy} disabled={!inv}>
+          <Icon name={copied ? 'check' : 'copy'} bare size={20} tone="lavender" />{copied ? '¡Copiado!' : 'Copiar link'}
+        </Button>
+        {inv && (
+          <a href={`https://wa.me/?text=${encodeURIComponent(`Te invito a nuestro Loopy: ${url}`)}`} target="_blank" rel="noreferrer" className="no-underline">
+            <Button variant="secondary"><Icon name="whatsapp" bare size={20} tone="mint" />WhatsApp</Button>
+          </a>
+        )}
+      </div>
+      {inv && <p className="m-0 text-xs text-ink-muted">Código <b className="tracking-widest text-ink-soft">{inv.codigo}</b> · vence el {new Date(inv.vence_en).toLocaleDateString('es-AR')}</p>}
+    </div>
+  )
+}
+
 export default function Estados() {
   const { space, user } = useAuth()
   const [mine, setMine] = useState<Status | null>(null)
@@ -138,6 +187,7 @@ export default function Estados() {
   const [touches, setTouches] = useState<Touch[]>([])
   const [reactions, setReactions] = useState<Reaction[]>([])
   const [loading, setLoading] = useState(true)
+  const [hasPartner, setHasPartner] = useState(true)
   const [, setTick] = useState(0)
 
   const [emoji, setEmoji] = useState(MOODS[0].key)
@@ -162,11 +212,12 @@ export default function Estados() {
     if (!space || !user) return
     const since = new Date()
     since.setHours(0, 0, 0, 0)
-    const [m, p, t, r] = await Promise.all([
+    const [m, p, t, r, mc] = await Promise.all([
       supabase.from('statuses').select('*').eq('space_id', space.id).eq('user_id', user.id).maybeSingle(),
       supabase.from('statuses').select('*').eq('space_id', space.id).neq('user_id', user.id).maybeSingle(),
       supabase.from('thinking_touches').select('*').eq('space_id', space.id).gte('creado_en', since.toISOString()).order('creado_en', { ascending: false }),
       supabase.from('status_reactions').select('*').eq('space_id', space.id).gte('creado_en', since.toISOString()).order('creado_en', { ascending: false }),
+      supabase.from('memberships').select('user_id', { count: 'exact', head: true }).eq('space_id', space.id),
     ])
     const s = m.data as Status | null
     setMine(s)
@@ -181,6 +232,7 @@ export default function Estados() {
       setSavedKey(JSON.stringify([e, d, s.actividad_tipo, txt.trim(), s.ubicacion, en, (s.mensaje ?? '').trim(), 'none']))
     }
     setPartner(p.data as Status | null)
+    setHasPartner((mc.count ?? 2) >= 2)
     setTouches((t.data as Touch[]) ?? [])
     setReactions((r.data as Reaction[]) ?? [])
     setLoading(false)
@@ -299,14 +351,15 @@ export default function Estados() {
 
   return (
     <Page>
-      <MoodAura mine={emoji} partner={p?.mood ?? null} />
+      <MoodAura mine={emoji} partner={hasPartner ? p?.mood ?? null : null} />
       <PageHeader icon="estados" title="Estados" subtitle="Cómo está cada uno, ahora mismo." />
 
       {/* ── Escenario: ella/él | vos ── */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <StatusView
           eyebrow="Tu pareja"
-          theme={pTheme}
+          theme={hasPartner ? pTheme : GRAY}
+          locked={!hasPartner}
           moodKey={p?.mood ?? null}
           moodLabel={p ? (p.asleep ? 'Durmiendo' : MOODS.find((m) => m.key === p.emoji)?.label ?? 'Sin ánimo') : ''}
           sub={p ? `Actualizó ${timeAgo(p.actualizado_en)}` : undefined}
@@ -318,7 +371,7 @@ export default function Estados() {
           vence={p && !p.expired ? p.vence_en : null}
           mensaje={p?.mensaje}
           energia={p?.energia}
-          empty={!p ? (
+          empty={!hasPartner ? <InvitePartner /> : !p ? (
             <div className="relative flex items-center gap-6 py-2">
               <InteractiveLoopy size={140} expression="waiting" className="shrink-0" />
               <p className="m-0 text-ink/70">Todavía no actualizó su estado. Mientras tanto, mandale un toque.</p>
