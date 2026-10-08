@@ -35,6 +35,7 @@ export default function InvitePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
     if (!authLoading && hasPartner === true) navigate('/app', { replace: true })
@@ -44,10 +45,15 @@ export default function InvitePage() {
     if (authLoading || !spaceId || hasPartner !== false) return
     let active = true
     getInvitation(spaceId).then((data) => { if (active) { setInvitation(data); setError(null) } })
-      .catch(() => { if (active) setError('No se pudo preparar la invitación. Recargá la página para probar nuevamente.') })
+      .catch((cause: unknown) => {
+        if (!active) return
+        const detail = cause && typeof cause === 'object' && 'message' in cause ? String(cause.message) : 'Error de conexión con Supabase'
+        const code = cause && typeof cause === 'object' && 'code' in cause ? String(cause.code) : ''
+        setError(`No se pudo preparar la invitación: ${detail}${code ? ` (${code})` : ''}`)
+      })
       .finally(() => { if (active) setLoading(false) })
     return () => { active = false }
-  }, [authLoading, spaceId, hasPartner])
+  }, [authLoading, spaceId, hasPartner, attempt])
 
   const inviteUrl = invitation ? `${window.location.origin}/invite/${invitation.token}` : ''
 
@@ -68,7 +74,7 @@ export default function InvitePage() {
     >
       {loading && !partnerError && <p className="text-center text-ink-muted">Preparando la invitación…</p>}
       {partnerError && <p role="alert" className="text-center text-sm text-error">No pudimos comprobar los integrantes del espacio. Recargá la página para intentar nuevamente.</p>}
-      {error && <p className="text-center text-sm text-error">{error}</p>}
+      {error && <div role="alert"><p className="text-center text-sm text-error">{error}</p><Button variant="secondary" className="w-full" disabled={loading} onClick={() => { setLoading(true); setError(null); setAttempt((value) => value + 1) }}>Reintentar</Button></div>}
 
       {invitation && hasPartner === false && (
         <div className="flex flex-col gap-4">
