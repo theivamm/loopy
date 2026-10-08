@@ -9,6 +9,7 @@ import {
   TextB, TextItalic, TextUnderline, TextStrikethrough, TextHTwo, ListBullets, ListNumbers,
   TextAlignLeft, TextAlignCenter, TextAlignRight, Quotes, Eraser, Highlighter, TextAa, UploadSimple,
   ImageSquare, EnvelopeSimpleOpen, BellRinging, Briefcase, GraduationCap, Barbell, Car, Buildings, HandHeart, Lightning, Bed, Television, Headphones,
+  Eye, EyeSlash,
   type Icon as PhosphorIcon,
 } from '@phosphor-icons/react'
 
@@ -49,6 +50,7 @@ const REG = {
   highlighter: [Highlighter, 'butter'], size: [TextAa, 'lavender'], upload: [UploadSimple, 'sky'], image: [ImageSquare, 'sky'],
   envelopeOpen: [EnvelopeSimpleOpen, 'blush'], bell: [BellRinging, 'butter'],
   tv: [Television, 'sky'], headphones: [Headphones, 'blush'],
+  eye: [Eye, 'lavender'], eyeOff: [EyeSlash, 'lavender'],
 } as const satisfies Record<string, readonly [PhosphorIcon, Tone]>
 
 export type IconName = keyof typeof REG

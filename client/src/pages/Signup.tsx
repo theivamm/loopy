@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { Button } from '../components/ui/Button'
-import { AuthShell, IconField } from '../components/ui/AuthShell'
+import { AuthShell, IconField, PasswordField } from '../components/ui/AuthShell'
 
 export default function Signup() {
   const navigate = useNavigate()
@@ -19,7 +19,13 @@ export default function Signup() {
     const { data, error } = await supabase.auth.signUp({ email, password })
     setLoading(false)
     if (error) {
-      setError('Uy, se nos enredó el hilo. Probá de nuevo.')
+      if (error.message.toLowerCase().includes('already registered') || error.message.toLowerCase().includes('already exists')) {
+        setError('Ese email ya tiene una cuenta. Probá iniciar sesión.')
+      } else if (error.status === 500) {
+        setError('No pudimos mandar el email de confirmación. Probá de nuevo en un rato, o pedile a quien armó el espacio que desactive la confirmación por email mientras tanto.')
+      } else {
+        setError('Uy, se nos enredó el hilo. Probá de nuevo.')
+      }
       return
     }
 
@@ -50,7 +56,7 @@ export default function Signup() {
     <AuthShell title="Creemos su espacio" subtitle="Dos vidas, un mismo lazo." expression="celebrating">
       <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
         <IconField icon="cartas" type="email" required autoComplete="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <IconField icon="lock" type="password" required minLength={6} autoComplete="new-password" placeholder="Contraseña (mín. 6 caracteres)" value={password} onChange={(e) => setPassword(e.target.value)} />
+        <PasswordField required minLength={6} autoComplete="new-password" placeholder="Contraseña (mín. 6 caracteres)" value={password} onChange={(e) => setPassword(e.target.value)} />
         {error && <p className="m-0 rounded-2xl bg-[#FFE6EA] px-4 py-2 text-sm text-error">{error}</p>}
         <Button type="submit" disabled={loading} className="mt-1 w-full">
           {loading ? 'Creando…' : 'Crear cuenta'}

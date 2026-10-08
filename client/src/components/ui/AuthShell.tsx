@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes, ReactNode } from 'react'
+import { useState, type InputHTMLAttributes, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Blobs } from './Blobs'
 import { Icon, type IconName } from './Icon'
@@ -14,6 +14,27 @@ export function IconField({ icon, ...props }: { icon: IconName } & InputHTMLAttr
         <Icon name={icon} size={34} />
       </span>
       <input {...props} className={`field !pl-[54px] ${props.className ?? ''}`} />
+    </div>
+  )
+}
+
+/** IconField para contraseñas, con un ojito para mostrar/ocultar el texto. */
+export function PasswordField(props: Omit<InputHTMLAttributes<HTMLInputElement>, 'type'>) {
+  const [show, setShow] = useState(false)
+  return (
+    <div className="relative">
+      <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2">
+        <Icon name="lock" size={34} />
+      </span>
+      <input {...props} type={show ? 'text' : 'password'} className={`field !pl-[54px] !pr-[52px] ${props.className ?? ''}`} />
+      <button
+        type="button"
+        onClick={() => setShow((v) => !v)}
+        aria-label={show ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+        className="absolute right-3 top-1/2 -translate-y-1/2 p-1"
+      >
+        <Icon name={show ? 'eyeOff' : 'eye'} bare size={22} tone="lavender" />
+      </button>
     </div>
   )
 }
